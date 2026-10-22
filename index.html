@@ -178,6 +178,29 @@
     .toggle input { accent-color:#0ea5e9; }
     .swatch { display:inline-block; width:12px; height:12px; border-radius:4px; border:2px solid var(--c); background:var(--bgc); vertical-align:-2px; margin-right:5px; }
 
+    /* ---------- Combined map + advising ---------- */
+    #map-top, #my-plan, #step4 { scroll-margin-top:110px; }
+    .mc-card { user-select:none; -webkit-user-select:none; }
+    .mc-card .info { position:absolute; top:3px; left:6px; font-size:12px; line-height:1; padding:2px; color:#0284c7; opacity:.55; cursor:pointer; z-index:3; }
+    .mc-card .info:hover, .mc-card .info:focus-visible { opacity:1; color:#f97316; }
+    .overlay-on .st-together .badge { background:#6366f1; }
+    .overlay-on .st-ready { box-shadow:0 0 0 2px rgba(14,165,233,.5); }
+    .overlay-on .st-together { box-shadow:0 0 0 2px rgba(99,102,241,.5); }
+    .overlay-on .st-prog { background:#fff7ed; border-color:#f97316; border-style:dashed; }
+    .overlay-on .st-next { border-color:#f97316; animation:nextGlow 2.2s ease-in-out infinite; }
+    @keyframes nextGlow { 0%,100%{box-shadow:0 0 0 2px rgba(249,115,22,.55),0 0 0 0 rgba(249,115,22,0)} 50%{box-shadow:0 0 0 3px rgba(249,115,22,.85),0 0 18px rgba(249,115,22,.55)} }
+    .mc-card.pop { animation:cardPop .9s cubic-bezier(.2,.9,.3,1.4); }
+    @keyframes cardPop { 0%{transform:scale(1)} 35%{transform:scale(1.12); box-shadow:0 0 28px rgba(14,165,233,.9)} 100%{transform:scale(1)} }
+    .overlay-on .mc-card.ghost { opacity:.1; }
+    .overlay-on .mc-card.dim { opacity:.3; }
+    .lg-dot { display:inline-flex; width:18px; height:18px; border-radius:50%; align-items:center; justify-content:center; color:#fff; font-size:9px; font-style:normal; }
+    .lg-ring { display:inline-block; width:22px; height:13px; border-radius:5px; border:2px solid #f97316; box-shadow:0 0 8px rgba(249,115,22,.6); }
+    .opt-chip { display:inline-flex; align-items:baseline; gap:6px; padding:4px 10px; border-radius:999px; font-size:11.5px; font-weight:700; background:#e0f2fe; color:#0369a1; border:1px solid #7dd3fc; transition:transform .2s, box-shadow .2s; }
+    .opt-chip small { font-size:10px; font-weight:500; opacity:.7; }
+    .opt-chip:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(14,165,233,.35); }
+    .opt-chip.tg { background:#eef2ff; color:#4338ca; border-color:#a5b4fc; }
+    .opt-chip.bk { background:#fef3c7; color:#b45309; border-color:#fcd34d; }
+
     /* ---------- Planner ---------- */
     .step-dot { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; background:#fff; color:#64748b; border:2px solid #bae6fd; transition:all .3s; flex-shrink:0; }
     .step-item.done .step-dot { background:linear-gradient(135deg,#10b981,#059669); color:#fff; border-color:transparent; }
@@ -237,11 +260,8 @@
       </div>
 
       <div class="flex items-center gap-2 sm:gap-3">
-        <button onclick="setView('map')" class="btn-glow px-3.5 py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-md">
-          <i class="fa-solid fa-diagram-project"></i><span class="hidden sm:inline">Curriculum Map</span>
-        </button>
-        <button onclick="setView('planner')" class="btn-glow pulse-btn px-3.5 py-2 bg-gradient-to-r from-warmorange-500 to-warmorange-600 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5 active:scale-95">
-          <i class="fa-solid fa-clipboard-check text-sm"></i><span>Start My Advising</span>
+        <button onclick="setView('download')" class="btn-glow pulse-btn px-3.5 py-2 bg-gradient-to-r from-warmorange-500 to-warmorange-600 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5 active:scale-95">
+          <i class="fa-solid fa-file-arrow-down text-sm"></i><span>Download for advisor</span>
         </button>
         <button onclick="toggleDataMenu()" class="p-2 text-slate-600 hover:text-sky-600 focus:outline-none transition-transform hover:rotate-90" title="Record options" aria-label="Record options">
           <i class="fa-solid fa-ellipsis-vertical text-lg"></i>
@@ -293,19 +313,14 @@
       <div class="ticker-track text-[11px] font-mono font-semibold text-sky-700 uppercase tracking-widest" id="ticker-track"></div>
     </div>
 
-    <div class="flex justify-center mb-6">
-      <div class="glass inline-flex p-1.5 rounded-2xl gap-1" role="tablist">
-        <button id="tab-map" role="tab" onclick="setView('map')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 tab-active"><i class="fa-solid fa-diagram-project"></i> Curriculum Map</button>
-        <button id="tab-planner" role="tab" onclick="setView('planner')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 tab-idle"><i class="fa-solid fa-clipboard-check"></i> My Advising Plan</button>
-      </div>
-    </div>
-
+    
     <!-- ============ MAP VIEW ============ -->
-    <div id="view-map">
+    <div id="map-top">
       <div role="alert" class="warn-banner rounded-2xl px-4 py-3 mb-3 flex items-center gap-3">
         <span class="warn-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
         <span class="text-sm font-bold text-amber-900">Check with your advisor for approval before registration</span>
       </div>
+      <div id="stepper" class="glass rounded-2xl p-4 mb-3 grid grid-cols-2 md:grid-cols-4 gap-3"></div>
       <div class="glass rounded-2xl p-3.5 mb-3 flex flex-wrap items-center gap-3">
         <div class="flex items-center gap-1.5">
           <button id="jr-play" onclick="togglePlay()" class="btn-glow px-3.5 py-2 bg-gradient-to-r from-sky-500 to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md"><i class="fa-solid fa-play"></i><span>Play journey</span></button>
@@ -325,11 +340,23 @@
             <option value="0.6">Slow</option><option value="1" selected>Normal</option><option value="1.8">Fast</option>
           </select>
           <label class="toggle"><input type="checkbox" id="opt-links" checked onchange="applyOptions()"> Show links</label>
-          <label class="toggle"><input type="checkbox" id="opt-overlay" onchange="applyOptions()"> Show my progress</label>
         </div>
       </div>
 
       <div id="jr-timeline" class="flex gap-1.5 overflow-x-auto pb-2 mb-2"></div>
+
+      <div class="glass rounded-2xl p-4 mb-3">
+        <div class="flex flex-wrap items-end gap-3">
+          <div class="min-w-[210px]">
+            <label for="st-term" class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">I am currently in</label>
+            <select id="st-term" class="field" onchange="onTermChange()"></select>
+          </div>
+          <button onclick="prefill()" class="btn-glow px-3 py-2.5 bg-gradient-to-r from-sky-500 to-indigo-500 text-white rounded-xl text-xs font-bold"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Pre-fill from the standard plan</button>
+          <button id="clear-btn" onclick="clearCourses()" class="btn-glow px-3 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-xs font-semibold"><i class="fa-solid fa-eraser mr-1"></i>Clear courses</button>
+          <p class="text-[11px] text-slate-500 flex-1 min-w-[220px] leading-relaxed">Click a course on the map to mark it <b>Completed</b>. Click again for <b>Taking now</b>, a third time to clear. The courses that open up are highlighted and listed here.</p>
+        </div>
+        <div id="next-strip" class="mt-3 pt-3 border-t border-sky-100 space-y-2" aria-live="polite"></div>
+      </div>
 
       <div class="glass hud rounded-3xl">
         <div id="map-scroll"><div id="map-board"></div></div>
@@ -342,49 +369,45 @@
         <span class="flex items-center gap-1.5"><svg width="34" height="8"><line x1="0" y1="4" x2="34" y2="4" stroke="#15803d" stroke-width="2" stroke-dasharray="6 5"/></svg>Prerequisite / concurrent</span>
         <span class="flex items-center gap-1.5"><svg width="34" height="8"><line x1="0" y1="4" x2="34" y2="4" stroke="#f97316" stroke-width="2.5"/></svg>Unlocks (on hover)</span>
       </div>
-      <p class="text-[11px] text-slate-500 mt-3 leading-relaxed">Hover or focus a course to trace what it needs and what it unlocks. Click a course for details. Swipe sideways on small screens to follow the years. Based on the department course flowchart; the * and ** marks come from that chart, so confirm their conditions with your advisor.</p>
+      <div class="glass rounded-xl p-3.5 mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-slate-700">
+        <span class="font-bold uppercase tracking-wider text-slate-500">Your status</span>
+        <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#10b981"><i class="fa-solid fa-check"></i></i>Completed</span>
+        <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#f97316"><i class="fa-solid fa-hourglass-half"></i></i>Taking now</span>
+        <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#0ea5e9"><i class="fa-solid fa-unlock"></i></i>Available now</span>
+        <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#6366f1"><i class="fa-solid fa-link"></i></i>Take together with another course</span>
+        <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#94a3b8"><i class="fa-solid fa-lock"></i></i>Locked until prerequisites are done</span>
+        <span class="flex items-center gap-1.5"><i class="lg-ring"></i>Suggested for next term</span>
+      </div>
+      <p class="text-[11px] text-slate-500 mt-3 leading-relaxed">Hover or focus a course to trace what it needs and what it unlocks. Use the small info icon on a course for details. Swipe sideways on small screens to follow the years. Based on the department course flowchart; the * and ** marks come from that chart, so confirm their conditions with your advisor.</p>
     </div>
 
     <!-- ============ PLANNER VIEW ============ -->
-    <div id="view-planner" class="hidden">
-      <div id="stepper" class="glass rounded-2xl p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+    <div id="my-plan" class="mt-8">
       <div id="record-banner" class="hidden mb-4"></div>
 
       <div class="grid xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-6">
         <div class="space-y-6 min-w-0">
           <section class="glass hud rounded-2xl p-5">
-            <h3 class="font-tech text-sm font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-user-graduate text-warmorange-500"></i> Step 1 · About you</h3>
+            <h3 class="font-tech text-sm font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-user-graduate text-warmorange-500"></i> Your details</h3>
             <div class="grid sm:grid-cols-2 gap-3 mt-4 text-xs">
               <div><label for="st-name" class="block font-semibold text-slate-700 mb-1">Full name *</label><input id="st-name" class="field" oninput="onStudentInput()" autocomplete="name"></div>
               <div><label for="st-id" class="block font-semibold text-slate-700 mb-1">Student ID *</label><input id="st-id" class="field" oninput="onStudentInput()"></div>
               <div><label for="st-email" class="block font-semibold text-slate-700 mb-1">Email <span class="text-slate-400 font-normal">(optional)</span></label><input id="st-email" type="email" class="field" oninput="onStudentInput()" autocomplete="email"></div>
               <div><label for="st-advisor" class="block font-semibold text-slate-700 mb-1">Advisor <span class="text-slate-400 font-normal">(optional)</span></label><input id="st-advisor" class="field" oninput="onStudentInput()"></div>
-              <div class="sm:col-span-2">
-                <label for="st-term" class="block font-semibold text-slate-700 mb-1">Which term are you in right now? *</label>
-                <select id="st-term" class="field" onchange="onTermChange()"></select>
-                <p class="text-[11px] text-slate-500 mt-1">We plan the term after this one. Mark the courses you are taking now as "Taking now" in Step 2.</p>
               </div>
-            </div>
-            <div class="flex flex-wrap gap-2 mt-4">
-              <button onclick="prefill()" class="btn-glow px-3 py-2 bg-gradient-to-r from-sky-500 to-indigo-500 text-white rounded-xl text-xs font-bold"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Pre-fill from the standard plan</button>
-              <button id="clear-btn" onclick="clearCourses()" class="btn-glow px-3 py-2 bg-white border border-slate-300 text-slate-700 rounded-xl text-xs font-semibold"><i class="fa-solid fa-eraser mr-1"></i>Clear courses</button>
-            </div>
-            <p class="text-[11px] text-slate-500 mt-2">Pre-fill marks every earlier term as completed and this term as "Taking now". Change anything that differs from your record.</p>
           </section>
 
-          <section class="glass hud rounded-2xl p-5">
-            <div class="flex items-center justify-between gap-2 flex-wrap">
-              <h3 class="font-tech text-sm font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-list-check text-warmorange-500"></i> Step 2 · Mark your courses</h3>
-              <div class="flex gap-2 text-[11px] font-semibold"><button onclick="expandAll(true)" class="text-sky-600 hover:text-warmorange-600">Expand all</button><span class="text-slate-300">|</span><button onclick="expandAll(false)" class="text-sky-600 hover:text-warmorange-600">Collapse all</button></div>
-            </div>
-            <div id="course-list" class="space-y-2.5 mt-4"></div>
-          </section>
+          <details class="glass hud rounded-2xl p-5">
+            <summary class="cursor-pointer font-tech text-sm font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-list-check text-warmorange-500"></i> Prefer a list? Mark courses by term</summary>
+            <div class="flex justify-end gap-2 text-[11px] font-semibold mt-3"><button onclick="expandAll(true)" class="text-sky-600 hover:text-warmorange-600">Expand all</button><span class="text-slate-300">|</span><button onclick="expandAll(false)" class="text-sky-600 hover:text-warmorange-600">Collapse all</button></div>
+            <div id="course-list" class="space-y-2.5 mt-3"></div>
+          </details>
         </div>
 
         <aside class="min-w-0 xl:sticky xl:top-28 xl:self-start xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto xl:pr-1">
           <section class="glass hud rounded-2xl p-5">
             <div class="flex items-center justify-between gap-2 flex-wrap">
-              <h3 class="font-tech text-sm font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-route text-warmorange-500"></i> Step 3 · Your plan</h3>
+              <h3 class="font-tech text-sm font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-route text-warmorange-500"></i> Your plan</h3>
               <a href="#step4" onclick="document.getElementById('step4').scrollIntoView({behavior:'smooth'});return false;" class="text-[11px] font-bold text-sky-600 hover:text-warmorange-600">Jump to download <i class="fa-solid fa-arrow-down"></i></a>
             </div>
             <div id="results" class="mt-4 space-y-5"></div>
@@ -393,7 +416,7 @@
       </div>
 
       <section id="step4" class="glass hud rounded-2xl p-5 mt-6">
-        <h3 class="font-tech text-sm font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-file-arrow-down text-warmorange-500"></i> Step 4 · Download for your advisor</h3>
+        <h3 class="font-tech text-sm font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-file-arrow-down text-warmorange-500"></i> Download for your advisor</h3>
         <div class="grid md:grid-cols-2 gap-5 mt-4 text-xs">
           <div>
             <label for="st-notes" class="block font-semibold text-slate-700 mb-1">Notes for your advisor <span class="text-slate-400 font-normal">(optional)</span></label>
@@ -597,7 +620,7 @@ function escapeHTML(str){ if(str===undefined||str===null) return ''; return Stri
 const esc = escapeHTML;
 const ordinal = y => ['First','Second','Third','Fourth'][y-1];
 let toastTimer=null;
-function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.remove('hidden'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.add('hidden'),2600); }
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.remove('hidden'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.add('hidden'),4200); }
 const reduceMotion = false; // animations always on
 
 // ================= MAP LAYOUT =================
@@ -623,9 +646,10 @@ function buildMap(){
     <marker id="arrO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0L10 5L0 10z" fill="#f97316"/></marker>
   </defs><g id="edge-layer"></g></svg>`;
   COURSES.forEach(c=>{
-    h+=`<button class="mc-card t-${c.type} ghost" data-id="${c.id}" style="left:${colX(c.col)}px;top:${rowY(c.row)}px" aria-label="${esc(c.code+' '+c.name)}">
+    h+=`<div class="mc-card t-${c.type} ghost" role="button" tabindex="0" data-id="${c.id}" style="left:${colX(c.col)}px;top:${rowY(c.row)}px" aria-label="${esc(c.code+' '+c.name)}. Click to change status.">
+      <span class="info" role="button" tabindex="0" aria-label="Details for ${esc(c.code)}"><i class="fa-solid fa-circle-info"></i></span>
       <span class="badge"><i class="fa-solid fa-check"></i></span>
-      <span class="code">${esc(c.code)}${c.star?' '+c.star:''}</span><span class="nm">${esc(c.name)}</span><span class="cr">${c.cr} ${c.cr===1?'cr':'crs'}</span></button>`;
+      <span class="code">${esc(c.code)}${c.star?' '+c.star:''}</span><span class="nm">${esc(c.name)}</span><span class="cr">${c.cr} ${c.cr===1?'cr':'crs'}</span></div>`;
   });
   board.innerHTML=h;
   drawEdges();
@@ -635,11 +659,16 @@ function buildMap(){
     el.addEventListener('focus',()=>{ if(!pinned) highlight(id); });
     el.addEventListener('mouseleave',()=>{ if(!pinned) clearHighlight(); });
     el.addEventListener('blur',()=>{ if(!pinned) clearHighlight(); });
-    el.addEventListener('click',e=>{ e.stopPropagation(); openCourse(id); });
+    el.addEventListener('click',e=>{ e.stopPropagation(); cardClick(id); });
+    el.addEventListener('keydown',e=>{ if(e.target!==el) return; if(e.key==='Enter'||e.key===' '){ e.preventDefault(); cardClick(id); } });
+    const inf=el.querySelector('.info');
+    inf.addEventListener('click',e=>{ e.stopPropagation(); openCourse(id); });
+    inf.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); e.stopPropagation(); openCourse(id); } });
   });
   board.addEventListener('click',()=>{ if(pinned){ pinned=null; clearHighlight(); } });
   $('legend-types').innerHTML = Object.keys(TYPE_LABELS).map(k=>`<span class="t-${k}"><i class="swatch"></i>${TYPE_LABELS[k]}</span>`).join('');
   $('jr-total').textContent = TOTAL_CR;
+  board.classList.add('overlay-on');
   $('jr-timeline').innerHTML = TERMS.map((t,i)=>`<button class="tl-btn" data-i="${i}" onclick="setStep(${i+1})">${t.sem==='Summer'?'Summer':'Y'+t.year+' '+t.sem}</button>`).join('');
   mapBuilt=true;
 }
@@ -677,10 +706,18 @@ function applyReveal(){
   const active = mapStep>0 ? TERMS[mapStep-1].id : null;
   document.querySelectorAll('.term-pill').forEach(p=>p.classList.toggle('active', p.dataset.term===active || (active==='SUM'&&p.dataset.term==='Y3S')));
   document.querySelectorAll('.tl-btn').forEach((b,i)=>{ b.classList.toggle('done', i<mapStep-1); b.classList.toggle('cur', i===mapStep-1); });
-  const cum = TERMS.slice(0,mapStep).reduce((s,t)=>s+t.cr,0);
-  animateCount($('jr-credits'), cum);
-  $('jr-bar').style.width = (cum/TOTAL_CR*100)+'%';
-  $('jr-label').textContent = mapStep===0 ? 'Press play to walk through the four years' : (mapStep===TERMS.length ? 'Graduation · all 130 credits' : (TERMS[mapStep-1].sem==='Summer' ? 'Summer · Professional training' : ordinal(TERMS[mapStep-1].year)+' Year · '+TERMS[mapStep-1].sem));
+  if(mapStep<TERMS.length){
+    const cum = TERMS.slice(0,mapStep).reduce((s,t)=>s+t.cr,0);
+    animateCount($('jr-credits'), cum);
+    $('jr-bar').style.width = (cum/TOTAL_CR*100)+'%';
+    $('jr-label').textContent = mapStep===0 ? 'Press play to walk through the four years' : (TERMS[mapStep-1].sem==='Summer' ? 'Summer · Professional training' : ordinal(TERMS[mapStep-1].year)+' Year · '+TERMS[mapStep-1].sem);
+  } else refreshProgress();
+}
+function refreshProgress(P){
+  P=P||computePlan();
+  animateCount($('jr-credits'), P.done);
+  $('jr-bar').style.width=(P.done/TOTAL_CR*100)+'%';
+  $('jr-label').textContent = (P.done||P.prog) ? 'Your progress · '+P.done+' completed, '+P.prog+' in progress' : 'Click the courses you have taken to see what opens next';
 }
 function scrollToTerm(i){
   if(i<0) return; const box=$('map-scroll');
@@ -729,21 +766,66 @@ function clearHighlight(){
 }
 function pinCourse(id){ closeCourse(); setView('map'); pinned=id; highlight(id); toast('Tracing '+lbl(id)+'. Click the map background to clear.'); }
 
+let prevAvail=null, lastNewly=[];
 function updateOverlay(){
-  const on = $('opt-overlay').checked;
   const board=$('map-board'); if(!board) return;
-  board.classList.toggle('overlay-on', on);
-  if(!on) return;
-  if(!Object.keys(state.status).length) toast('Mark your courses in My Advising Plan to see your progress here.');
+  board.classList.add('overlay-on');
+  const P=computePlan(), avail=new Set();
   document.querySelectorAll('.mc-card').forEach(el=>{
-    const c=BYID[el.dataset.id], s=state.status[c.id];
-    el.classList.remove('st-done','st-prog','st-ready','st-blocked');
-    const icon=el.querySelector('.badge i');
+    const c=BYID[el.dataset.id], s=state.status[c.id], icon=el.querySelector('.badge i');
+    el.classList.remove('st-done','st-prog','st-ready','st-together','st-blocked','st-next');
     if(s==='done'){ el.classList.add('st-done'); icon.className='fa-solid fa-check'; }
     else if(s==='prog'){ el.classList.add('st-prog'); icon.className='fa-solid fa-hourglass-half'; }
-    else if(evaluate(c).state==='blocked'){ el.classList.add('st-blocked'); icon.className='fa-solid fa-lock'; }
-    else { el.classList.add('st-ready'); icon.className='fa-solid fa-unlock'; }
+    else {
+      const ev=P.ev[c.id];
+      if(ev.state==='blocked'){ el.classList.add('st-blocked'); icon.className='fa-solid fa-lock'; }
+      else {
+        avail.add(c.id);
+        el.classList.add(ev.state==='together'?'st-together':'st-ready');
+        icon.className = ev.state==='together' ? 'fa-solid fa-link' : 'fa-solid fa-unlock';
+        if(P.next && c.term===P.next.id) el.classList.add('st-next');
+      }
+    }
   });
+  lastNewly = prevAvail ? [...avail].filter(i=>!prevAvail.has(i)) : [];
+  prevAvail=avail;
+  lastNewly.forEach(id=>{ const el=document.querySelector('.mc-card[data-id="'+id+'"]'); if(!el) return; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),1400); });
+  renderNextStrip(P);
+  if(mapStep>=TERMS.length) refreshProgress(P);
+}
+function groupChips(list,P,cls){
+  const m=new Map();
+  list.forEach(c=>{ const k=c.type==='elec'?c.name+' ('+c.code+')':lbl(c.id); const g=m.get(k)||{ids:[],cr:0,tg:false}; g.ids.push(c.id); g.cr+=c.cr; if(P.ev[c.id].state==='together') g.tg=true; m.set(k,g); });
+  return [...m].map(([k,g])=>`<button class="opt-chip ${cls||''} ${g.tg&&!cls?'tg':''}" onclick="focusCourse('${g.ids[0]}')" title="Show on the map">${esc(k)}${g.ids.length>1?' ×'+g.ids.length:''}<small>${g.cr} cr</small></button>`).join('');
+}
+function renderNextStrip(P){
+  const el=$('next-strip'); if(!el) return;
+  let h='';
+  if(!P.next){ h='<p class="text-xs text-slate-600">You are in the last term. Check the plan below for anything still unmarked.</p>'; }
+  else {
+    const nxt=P.nextList.filter(c=>P.ev[c.id].state!=='blocked'), sum=nxt.reduce((s,c)=>s+c.cr,0);
+    const hint = !Object.values(state.status).includes('prog') ? 'Mark the courses you are taking now, or use Pre-fill, to see what opens.' : 'Nothing in that term is open yet. Check the prerequisites on the map.';
+    h+=`<div class="flex flex-wrap items-center gap-2"><span class="text-[11px] font-bold uppercase tracking-wider text-warmorange-600 whitespace-nowrap"><i class="fa-solid fa-forward mr-1"></i>Next term · ${esc(termLabel(P.next))}</span>${nxt.length?groupChips(nxt,P):'<span class="text-xs text-slate-500">'+hint+'</span>'}${nxt.length?`<span class="text-[11px] text-slate-500 whitespace-nowrap">${sum} cr ready</span>`:''}</div>`;
+  }
+  const back=P.catchUp.filter(c=>P.ev[c.id].state!=='blocked');
+  if(back.length) h+=`<div class="flex flex-wrap items-center gap-2"><span class="text-[11px] font-bold uppercase tracking-wider text-amber-700 whitespace-nowrap"><i class="fa-solid fa-clock-rotate-left mr-1"></i>Behind the standard plan</span>${groupChips(back,P,'bk')}</div>`;
+  el.innerHTML=h;
+}
+function focusCourse(id){
+  const el=document.querySelector('.mc-card[data-id="'+id+'"]'); if(!el) return;
+  if(mapStep<TERMS.length){ stopPlay(); setStep(TERMS.length,{scroll:false}); }
+  el.scrollIntoView({behavior:'smooth',block:'center',inline:'center'});
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),1400);
+}
+function cardClick(id){
+  if(mapStep<TERMS.length){ stopPlay(); setStep(TERMS.length,{scroll:false}); }
+  const cur=state.status[id], nxt=!cur?'done':(cur==='done'?'prog':'none');
+  let warn=''; if(!cur){ const ev=evaluate(BYID[id]); if(ev.state==='blocked') warn=' Note: '+reasons(ev)[0]+'.'; }
+  setStatus(id,nxt);
+  const n=lastNewly.filter(i=>i!==id).map(i=>lbl(i));
+  const word={done:'marked completed',prog:'marked taking now',none:'cleared'}[nxt];
+  const more = nxt==='none'||!n.length ? '' : (nxt==='done'?' Now open: ':' Open once you pass it: ')+n.slice(0,4).join(', ')+(n.length>4?' and '+(n.length-4)+' more':'')+'.';
+  toast(lbl(id)+' '+word+'.'+warn+more);
 }
 
 // ================= COURSE MODAL =================
@@ -800,7 +882,7 @@ function hasAny(){ return Object.keys(state.status).length>0; }
 function setStatus(id,s){
   if(s==='none') delete state.status[id]; else state.status[id]=s;
   state.loaded=null; $('record-banner').classList.add('hidden');
-  if($('view-planner')){ updateRow(id); updateTermHeader(BYID[id].term); }
+  updateRow(id); updateTermHeader(BYID[id].term);
   renderResults(); renderStepper(); updateOverlay(); save();
 }
 function fillStudentForm(){
@@ -811,7 +893,7 @@ function onStudentInput(){
   state.student={name:$('st-name').value.trim(), id:$('st-id').value.trim(), email:$('st-email').value.trim(), advisor:$('st-advisor').value.trim()};
   state.notes=$('st-notes').value; renderStepper(); updateDownloadState(); save();
 }
-function onTermChange(){ state.termId=$('st-term').value; defaultOpen(); renderCourseList(); renderResults(); renderStepper(); save(); }
+function onTermChange(){ state.termId=$('st-term').value; defaultOpen(); renderCourseList(); renderResults(); renderStepper(); updateOverlay(); save(); }
 function prefill(){
   const cur=termIndex(state.termId);
   COURSES.forEach(c=>{ if(c.ti<cur) state.status[c.id]='done'; else if(c.ti===cur) state.status[c.id]='prog'; });
@@ -888,7 +970,7 @@ $('course-list').addEventListener('click',e=>{
 
 function renderStepper(){
   const named = state.student.name && state.student.id;
-  const items=[{t:'Your details',d:!!named,i:'fa-user'},{t:'Mark your courses',d:hasAny(),i:'fa-list-check'},{t:'Review your plan',d:hasAny(),i:'fa-route'},{t:'Download for advisor',d:state.downloaded,i:'fa-file-arrow-down'}];
+  const items=[{t:'Pick your current term',d:state.termId!=='Y1F'||hasAny(),i:'fa-user'},{t:'Click your courses on the map',d:hasAny(),i:'fa-list-check'},{t:'Review what opens next',d:hasAny()&&!!named,i:'fa-route'},{t:'Download for advisor',d:state.downloaded,i:'fa-file-arrow-down'}];
   let cur=items.findIndex(x=>!x.d); if(cur<0) cur=3;
   $('stepper').innerHTML = items.map((s,i)=>`<div class="step-item flex items-center gap-2.5 ${s.d?'done':''} ${i===cur&&!s.d?'cur':''}"><span class="step-dot">${s.d?'<i class="fa-solid fa-check"></i>':i+1}</span><span class="text-xs font-bold text-slate-800 leading-tight">${s.t}</span></div>`).join('');
 }
@@ -1028,11 +1110,11 @@ function botReply(q){
     return `<b>${esc(c.code)}</b> ${esc(c.name)} (${c.cr} cr), standard term ${esc(termLabel(TERMS[c.ti]))}.<br>Needs first: ${esc(c.pre.map(lbl).join(', ')||'nothing on the chart')}.<br>With or after: ${esc(c.co.map(lbl).join(', ')||'nothing')}.<br>Unlocks: ${esc(un.join(', ')||'nothing')}.`;
   }
   if(/next|take|eligible|ready|register/i.test(q)){
-    if(!hasAny()) return 'Fill in My Advising Plan first. Mark what you finished and what you are taking now, and I will list your ready courses.';
+    if(!hasAny()) return 'Click the courses you have finished on the map first, and the ones you are taking now. Then I can list what you can take next.';
     const P=computePlan(); const rd=[...P.nextList,...P.catchUp].filter((c,i,a)=>a.indexOf(c)===i&&P.ev[c.id].state!=='blocked').map(c=>lbl(c.id));
     return rd.length?'Ready or take-together courses: '+esc(rd.join(', '))+'.':'Nothing from your next term is open yet. Check that your "Taking now" courses are marked.';
   }
-  if(/download|advisor|record|report/i.test(q)) return 'In Step 4 of My Advising Plan you can download an advisor report (.html, printable) and a record (.json). Your advisor can load the .json to see your courses.';
+  if(/download|advisor|record|report/i.test(q)) return 'In the Download section below the map you can download an advisor report (.html, printable) and a record (.json). Your advisor can load the .json to see your courses.';
   if(/credit|graduat|130/i.test(q)) return 'The plan totals '+TOTAL_CR+' credits: '+TERMS.filter(t=>t.id!=='SUM').map(t=>t.cr).join(', ')+' by semester, plus a 0-credit summer training (MCE 397).';
   return 'Try a course such as "MCE 344", or ask "What can I take next?" or "How do I download my record?"';
 }
@@ -1046,23 +1128,17 @@ function handleChat(e){
 
 // ================= VIEWS / FX =================
 function toggleDataMenu(){ $('data-menu').classList.toggle('hidden'); }
-let currentView='map';
 function setView(v){
-  currentView=v;
-  $('view-map').classList.toggle('hidden',v!=='map'); $('view-planner').classList.toggle('hidden',v!=='planner');
-  $('tab-map').className='px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 '+(v==='map'?'tab-active':'tab-idle');
-  $('tab-planner').className='px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 '+(v==='planner'?'tab-active':'tab-idle');
-  if(v!=='map') stopPlay();
-  try{ history.replaceState(null,'','#'+v); }catch(e){}
-  window.scrollTo({top:0,behavior:'smooth'});
+  const t = v==='download' ? $('step4') : v==='planner' ? $('my-plan') : $('map-top');
+  if(t) t.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function animateCount(el,target){
   const start=parseInt(el.innerText)||0; if(start===target){ el.innerText=target; return; }
   const dur=800,t0=performance.now();
-  (function step(t){ const p=Math.min((t-t0)/dur,1), e=1-Math.pow(1-p,3); el.innerText=Math.round(start+(target-start)*e); if(p<1) requestAnimationFrame(step); })(t0);
+  (function step(t){ const p=Math.max(0,Math.min((t-t0)/dur,1)), e=1-Math.pow(1-p,3); el.innerText=Math.round(start+(target-start)*e); if(p<1) requestAnimationFrame(step); })(t0);
 }
 function startTyping(){
-  const phrases=['Plan your path from Year 1 to graduation.','See every prerequisite and co-requisite at a glance.','Mark what you have taken and find what comes next.','Download your record for your advisor.'];
+  const phrases=['Plan your path from Year 1 to graduation.','Click the courses you have taken.','See what opens up next, right on the map.','Download your record for your advisor.'];
   const el=$('typed-text'); let pi=0,ci=0,del=false;
   if(reduceMotion){ el.textContent=phrases[0]; return; }
   (function tick(){ const w=phrases[pi]; el.textContent=w.substring(0,ci);
@@ -1085,14 +1161,12 @@ function initParticles(){
 // ================= INIT =================
 window.addEventListener('load',()=>{
   loadSaved(); defaultOpen();
-  const steps=['Step 1 · Pick your current term','Step 2 · Mark completed and in-progress courses','Step 3 · Review ready and blocked courses','Step 4 · Download your record','Step 5 · Meet your advisor to confirm'];
+  const steps=['Step 1 · Pick your current term','Step 2 · Click the courses you have completed','Step 3 · See what opens next on the map','Step 4 · Download your record','Step 5 · Meet your advisor to confirm'];
   const items=steps.map(s=>`<span><i class="fa-solid fa-bolt text-warmorange-500 mr-2"></i>${s}</span>`).join(''); $('ticker-track').innerHTML=items+items;
   animateCount($('stat-credits'),TOTAL_CR); animateCount($('stat-courses'),COURSES.length); animateCount($('stat-links'),EDGES.length);
   buildMap(); fillStudentForm(); renderAll(); startTyping(); initParticles();
-  const hash=location.hash.replace('#','');
-  if(hash==='planner'){ setView('planner'); }
-  if(reduceMotion){ setStep(TERMS.length,{scroll:false}); }
-  else { setStep(0,{scroll:false}); setTimeout(()=>{ if(currentView==='map' && mapStep===0) togglePlay(); },900); }
+  if(hasAny()){ setStep(TERMS.length,{scroll:false}); }
+  else { setStep(0,{scroll:false}); setTimeout(()=>{ if(mapStep===0) togglePlay(); },900); }
 });
 </script>
 </body></html>
