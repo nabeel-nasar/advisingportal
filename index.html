@@ -663,7 +663,7 @@ function drawEdges(){
     const x=colX(a.col)+CW; loops[a.col]=(loops[a.col]||0); const bulge=22+loops[a.col]*9; loops[a.col]++;
     return `M${x},${ay} C${x+bulge},${ay} ${x+bulge},${by} ${x},${by}`;
   });
-  $('edge-layer').innerHTML = EDGES.map((e,i)=>`<path class="edge ${e.type}" pathLength="1" data-i="${i}" d="${d[i]}"/>`).join('');
+  $('edge-layer').innerHTML = EDGES.map((e,i)=>`<path class="edge ${e.type}" ${e.type==='P'?'pathLength="1" ':''}data-i="${i}" d="${d[i]}"/>`).join('');
 }
 
 function applyReveal(){
