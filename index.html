@@ -227,7 +227,7 @@
         <div class="flex flex-col space-y-0.5 items-start text-left">
           <span class="text-xs sm:text-sm font-black uppercase tracking-widest text-indigo-950 block leading-none">AUS - College of Engineering</span>
           <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-warmorange-600 block leading-tight">Department of Mechanical Engineering</span>
-          <h1 class="font-tech text-sm sm:text-lg font-bold gradient-text tracking-wide leading-none mt-1">Course Plan Simulator</h1>
+          <h1 class="font-tech text-sm sm:text-lg font-bold gradient-text tracking-wide leading-none mt-1">Senior Design Project (SDP) Portal</h1>
         </div>
       </div>
 
@@ -290,8 +290,7 @@
 
     <div class="flex justify-center mb-6">
       <div class="glass inline-flex p-1.5 rounded-2xl gap-1" role="tablist">
-        <button id="tab-map" role="tab" onclick="setView('map')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 tab-active"><i class="fa-solid fa-diagram-project"></i> Curriculum Map. Students must consult with their advisors prior to registration to ensure correct course sequencing.
-</button>
+        <button id="tab-map" role="tab" onclick="setView('map')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 tab-active"><i class="fa-solid fa-diagram-project"></i> Curriculum Map</button>
         <button id="tab-planner" role="tab" onclick="setView('planner')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 tab-idle"><i class="fa-solid fa-clipboard-check"></i> My Advising Plan</button>
       </div>
     </div>
@@ -565,7 +564,7 @@ function computePlan(){
   const ev = {}; open.forEach(c=>ev[c.id]=evaluate(c));
   const nextList = next ? open.filter(c=>c.term===next.id) : [];
   const catchUp = open.filter(c=>c.ti<=cur);
-  const ahead = next ? open.filter(c=>c.ti>next.idx && ev[c.id].state!=='blocked') : [];
+  const ahead = next ? open.filter(c=>c.ti>next.idx && c.type!=='elec' && c.type!=='ger' && ev[c.id].state!=='blocked') : [];
   const flags = [];
   COURSES.forEach(c=>{
     const s = state.status[c.id]; if(!s) return;
@@ -882,7 +881,7 @@ function renderStepper(){
 function updateDownloadState(){
   const ok = state.student.name && state.student.id;
   $('dl-report').disabled=!ok; $('dl-json').disabled=!ok;
-  $('dl-hint').textContent = ok ? 'Send both files to your advisor. The record (.json) can be loaded back here to check it has not been changed.' : 'Add your name and student ID in Step 1 to enable the downloads.';
+  $('dl-hint').textContent = ok ? 'Send both files to your advisor. The record (.json) can be loaded back here by your advisor.' : 'Add your name and student ID in Step 1 to enable the downloads.';
 }
 
 // ---------- results ----------
@@ -937,19 +936,6 @@ function renderResults(){
 function renderAll(){ renderStepper(); renderCourseList(); renderResults(); updateDownloadState(); updateOverlay(); }
 
 // ================= RECORD / REPORT =================
-async function sha(str){
-  try{
-    if(window.crypto && crypto.subtle){ const b=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)); return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''); }
-  }catch(e){}
-  let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
-  return (h>>>0).toString(16).padStart(8,'0').repeat(2);
-}
-function canon(){
-  return JSON.stringify({n:state.student.name,i:state.student.id,t:state.termId,
-    d:COURSES.filter(c=>state.status[c.id]==='done').map(c=>c.id).sort(),
-    p:COURSES.filter(c=>state.status[c.id]==='prog').map(c=>c.id).sort()});
-}
-async function makeCode(){ return (await sha(canon())).slice(0,16).toUpperCase().match(/.{4}/g).join('-'); }
 const det = (c,P) => ({id:c.id,code:c.code,name:c.name,credits:c.cr,term:termLabel(TERMS[c.ti])});
 async function buildRecord(){
   const P=computePlan(), list=(arr)=>arr.map(c=>({...det(c),status:P.ev[c.id].state,notes:reasons(P.ev[c.id])}));
@@ -960,7 +946,6 @@ async function buildRecord(){
     courses:{ completed:COURSES.filter(c=>state.status[c.id]==='done').map(c=>c.id), inProgress:COURSES.filter(c=>state.status[c.id]==='prog').map(c=>c.id) },
     summary:{ creditsCompleted:P.done, creditsInProgress:P.prog, creditsRemaining:P.remaining, creditsRequired:TOTAL_CR },
     plan:{ nextTerm:list(P.nextList), behindPlan:list(P.catchUp), flags:P.flags },
-    code: await makeCode()
   };
 }
 function saveFile(name,mime,text){
@@ -989,7 +974,7 @@ h1{font-size:20px;margin:0}h2{font-size:14px;margin:22px 0 6px;border-bottom:2px
 table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #d6e6f2;padding:5px 6px;text-align:left;vertical-align:top}th{background:#e0f2fe;font-size:11px;text-transform:uppercase}
 .n{text-align:right;white-space:nowrap}.mute{color:#64748b}.grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px}.k{color:#64748b}
 .box{border:1px solid #94a3b8;border-radius:6px;padding:12px;margin-top:6px}.line{border-bottom:1px solid #0b2545;height:26px;margin-top:6px}
-.code{font-family:monospace;font-weight:700;font-size:15px}button{padding:8px 14px;border:0;border-radius:6px;background:#0ea5e9;color:#fff;font-weight:700;cursor:pointer}
+button{padding:8px 14px;border:0;border-radius:6px;background:#0ea5e9;color:#fff;font-weight:700;cursor:pointer}
 @media print{button{display:none}body{margin:0}}</style></head><body>
 <div class="top"><div class="sub">AUS - College of Engineering · Department of Mechanical Engineering</div><h1>Course Advising Record</h1><div class="mute">Generated ${esc(new Date(r.generated).toLocaleString())}</div></div>
 <button onclick="window.print()">Print / Save as PDF</button>
@@ -1002,7 +987,6 @@ table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #d6e6f2;
 <h2>Items to check</h2>${r.plan.flags.length?'<ul>'+r.plan.flags.map(f=>`<li>${esc(f)}</li>`).join('')+'</ul>':'<div class="mute">No inconsistencies found.</div>'}
 <h2>Student notes</h2><div class="box">${esc(r.notes||'None').replace(/\n/g,'<br>')}</div>
 <h2>Advisor confirmation</h2><div class="box"><div>&#9744; Record confirmed &nbsp;&nbsp; &#9744; Changes needed</div><div class="line"></div><div class="mute">Comments</div><div class="line"></div><div class="mute">Advisor name / signature / date</div></div>
-<h2>Record code</h2><div class="code">${esc(r.code)}</div><div class="mute">The code is calculated from the name, ID, term and course marks. Load the matching .json file in the portal to check that nothing was changed. It detects edits and is not a signature.</div>
 <p class="mute">Prepared from the department course flowchart. The official degree audit takes precedence.</p></body></html>`;
 }
 async function importRecord(ev){
@@ -1012,11 +996,9 @@ async function importRecord(ev){
     if(r.schema!=='aus-me-advising-record') throw new Error('schema');
     state.student={name:'',id:'',email:'',advisor:'',...(r.student||{})}; state.notes=r.notes||''; state.termId=TERMS.some(t=>t.id===r.standing?.termId)?r.standing.termId:'Y1F';
     state.status={}; (r.courses?.completed||[]).forEach(id=>{ if(BYID[id]) state.status[id]='done'; }); (r.courses?.inProgress||[]).forEach(id=>{ if(BYID[id]) state.status[id]='prog'; });
-    const ok=(await makeCode())===r.code;
     defaultOpen(); fillStudentForm(); setView('planner'); renderAll(); save();
-    state.loaded={ok};
     const b=$('record-banner'); b.classList.remove('hidden');
-    b.innerHTML=`<div class="glass rounded-2xl p-4 flex flex-wrap items-center gap-3 text-xs ${ok?'':'border-red-300'}"><span class="chip ${ok?'ok':'no'}"><i class="fa-solid ${ok?'fa-circle-check':'fa-triangle-exclamation'}"></i> ${ok?'Record code matches':'Record changed after download'}</span><span class="text-slate-700"><b>${esc(state.student.name)}</b> · ${esc(state.student.id)} · saved ${esc(new Date(r.generated).toLocaleDateString())}</span><span class="text-slate-500">${ok?'The courses below are exactly what the student downloaded.':'The file was edited, so confirm these marks with the student.'}</span></div>`;
+    b.innerHTML=`<div class="glass rounded-2xl p-4 flex flex-wrap items-center gap-3 text-xs"><span class="chip info"><i class="fa-solid fa-folder-open"></i> Record loaded</span><span class="text-slate-700"><b>${esc(state.student.name)}</b> · ${esc(state.student.id)} · saved ${esc(new Date(r.generated).toLocaleDateString())}</span><span class="text-slate-500">Check these marks against the student's official record.</span></div>`;
     toast('Record loaded.');
   }catch(e){ toast('That file is not an advising record.'); }
 }
@@ -1036,7 +1018,7 @@ function botReply(q){
     const P=computePlan(); const rd=[...P.nextList,...P.catchUp].filter((c,i,a)=>a.indexOf(c)===i&&P.ev[c.id].state!=='blocked').map(c=>lbl(c.id));
     return rd.length?'Ready or take-together courses: '+esc(rd.join(', '))+'.':'Nothing from your next term is open yet. Check that your "Taking now" courses are marked.';
   }
-  if(/download|advisor|record|report/i.test(q)) return 'In Step 4 of My Advising Plan you can download an advisor report (.html, printable) and a record (.json). Your advisor can load the .json to confirm nothing was changed.';
+  if(/download|advisor|record|report/i.test(q)) return 'In Step 4 of My Advising Plan you can download an advisor report (.html, printable) and a record (.json). Your advisor can load the .json to see your courses.';
   if(/credit|graduat|130/i.test(q)) return 'The plan totals '+TOTAL_CR+' credits: '+TERMS.filter(t=>t.id!=='SUM').map(t=>t.cr).join(', ')+' by semester, plus a 0-credit summer training (MCE 397).';
   return 'Try a course such as "MCE 344", or ask "What can I take next?" or "How do I download my record?"';
 }
