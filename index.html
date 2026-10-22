@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>American University of Sharjah - Department of Mechanical Engineering - Course Advising</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        fontFamily: { sans: ['Inter','sans-serif'], mono: ['JetBrains Mono','monospace'], tech: ['Orbitron','sans-serif'] },
+        colors: {
+          skyblue: { 300:'#7dd3fc', 400:'#38bdf8', 500:'#0ea5e9', 600:'#0284c7' },
+          warmorange: { 100:'#ffedd5', 300:'#fdba74', 400:'#fb923c', 500:'#f97316', 600:'#ea580c' }
+        }
+      } }
+    }
+  </script>
+  <style>
+    :root {
+      --bg-1: rgba(230,244,255,0.75); --bg-2: rgba(207,233,255,0.75); --bg-3: rgba(185,222,252,0.75);
+      --ink: #0b2545; --accent: #0ea5e9; --accent-2: #38bdf8; --accent-3: #6366f1; --glow: rgba(14,165,233,0.35);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family:'Inter',sans-serif; color:var(--ink); background:linear-gradient(135deg,var(--bg-1),var(--bg-2) 50%,var(--bg-3)); background-size:200% 200%; animation:bgShift 18s ease-in-out infinite; overflow-x:hidden; }
+    @keyframes bgShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+    .hidden { display:none !important; }
+    :focus-visible { outline:2px solid #f97316; outline-offset:2px; }
+
+    #bg-canvas { position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+    .grid-floor { position:fixed; left:-50%; right:-50%; bottom:-10%; height:55vh; z-index:0; pointer-events:none;
+      background-image:linear-gradient(rgba(14,165,233,0.28) 1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,0.28) 1px,transparent 1px);
+      background-size:60px 60px; transform:perspective(500px) rotateX(62deg); transform-origin:center bottom; animation:gridMove 4s linear infinite;
+      mask-image:linear-gradient(to top,rgba(0,0,0,0.9),transparent 85%); -webkit-mask-image:linear-gradient(to top,rgba(0,0,0,0.9),transparent 85%); }
+    @keyframes gridMove { from{background-position:0 0} to{background-position:0 60px} }
+    .orb { position:fixed; border-radius:50%; filter:blur(60px); opacity:.55; z-index:0; pointer-events:none; }
+    .orb.o1 { width:420px; height:420px; background:#7dd3fc; top:-120px; left:-100px; animation:float1 14s ease-in-out infinite; }
+    .orb.o2 { width:360px; height:360px; background:#a5b4fc; top:30%; right:-120px; animation:float2 17s ease-in-out infinite; }
+    .orb.o3 { width:320px; height:320px; background:#bae6fd; bottom:-80px; left:25%; animation:float3 20s ease-in-out infinite; }
+    @keyframes float1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(120px,80px) scale(1.2)} }
+    @keyframes float2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-140px,-60px) scale(1.15)} }
+    @keyframes float3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(90px,-90px) scale(1.25)} }
+    .scanline { position:fixed; left:0; right:0; height:120px; z-index:1; pointer-events:none; background:linear-gradient(to bottom,transparent,rgba(14,165,233,0.07),transparent); animation:scan 7s linear infinite; }
+    @keyframes scan { from{top:-140px} to{top:100%} }
+    .content-layer { position:relative; z-index:10; }
+
+    .glass { background:rgba(255,255,255,0.62); backdrop-filter:blur(16px) saturate(160%); -webkit-backdrop-filter:blur(16px) saturate(160%);
+      border:1px solid rgba(255,255,255,0.85); box-shadow:0 10px 40px rgba(14,165,233,0.14), inset 0 1px 0 rgba(255,255,255,0.9); }
+    .hud { position:relative; }
+    .hud::before,.hud::after { content:''; position:absolute; width:18px; height:18px; pointer-events:none; border:2px solid var(--accent); transition:all .3s ease; z-index:3; }
+    .hud::before { top:8px; left:8px; border-right:none; border-bottom:none; border-radius:6px 0 0 0; }
+    .hud::after { bottom:8px; right:8px; border-left:none; border-top:none; border-radius:0 0 6px 0; }
+    .hud:hover::before,.hud:hover::after { width:30px; height:30px; border-color:#f97316; }
+
+    .site-header { background:rgba(235,247,255,0.72); backdrop-filter:blur(18px) saturate(170%); -webkit-backdrop-filter:blur(18px) saturate(170%); border-bottom:1px solid rgba(14,165,233,0.25); position:sticky; top:0; z-index:40; }
+    .site-header::after { content:''; position:absolute; left:0; bottom:-1px; height:2px; width:100%; background:linear-gradient(90deg,transparent,#0ea5e9,#6366f1,#f97316,transparent); background-size:200% 100%; animation:borderFlow 4s linear infinite; }
+    @keyframes borderFlow { from{background-position:0% 0} to{background-position:200% 0} }
+    .logo-ring { position:relative; width:60px; height:60px; flex-shrink:0; }
+    .logo-ring::before { content:''; position:absolute; inset:-4px; border-radius:18px; background:conic-gradient(from 0deg,#0ea5e9,#6366f1,#f97316,#38bdf8,#0ea5e9); animation:spin 4s linear infinite; filter:blur(1px); }
+    .logo-ring .inner { position:absolute; inset:0; border-radius:14px; overflow:hidden; background:#fff; z-index:1; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .gradient-text { background:linear-gradient(90deg,#0369a1,#0ea5e9,#6366f1,#0ea5e9,#0369a1); background-size:250% 100%; -webkit-background-clip:text; background-clip:text; color:transparent; animation:textFlow 6s linear infinite; }
+    @keyframes textFlow { from{background-position:0% 0} to{background-position:250% 0} }
+
+    .btn-glow { position:relative; overflow:hidden; transition:transform .2s, box-shadow .3s; }
+    .btn-glow::after { content:''; position:absolute; top:0; left:-80%; width:50%; height:100%; background:linear-gradient(120deg,transparent,rgba(255,255,255,0.7),transparent); transform:skewX(-20deg); transition:left .6s ease; }
+    .btn-glow:hover::after { left:130%; }
+    .btn-glow:hover { box-shadow:0 0 22px var(--glow); transform:translateY(-1px); }
+    .btn-glow:disabled { opacity:.45; cursor:not-allowed; transform:none; box-shadow:none; }
+    .pulse-btn { animation:pulseRing 2.4s infinite; }
+    @keyframes pulseRing { 0%{box-shadow:0 0 0 0 rgba(249,115,22,0.55)} 70%{box-shadow:0 0 0 14px rgba(249,115,22,0)} 100%{box-shadow:0 0 0 0 rgba(249,115,22,0)} }
+
+    .hero { position:relative; overflow:hidden; }
+    .hero .sheen { position:absolute; inset:0; pointer-events:none; border-radius:inherit; background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,0.7) 50%,transparent 70%); background-size:250% 100%; animation:sheen 6s ease-in-out infinite; }
+    @keyframes sheen { 0%{background-position:150% 0} 60%,100%{background-position:-100% 0} }
+    .orbit-wrap { position:relative; width:190px; height:190px; flex-shrink:0; }
+    .orbit-wrap .ring { position:absolute; inset:0; border-radius:50%; border:1.5px dashed rgba(14,165,233,0.55); }
+    .orbit-wrap .r1 { animation:spin 14s linear infinite; }
+    .orbit-wrap .r2 { inset:22px; border-style:solid; border-color:rgba(99,102,241,0.45); animation:spin 9s linear infinite reverse; }
+    .orbit-wrap .r3 { inset:46px; border-color:rgba(249,115,22,0.55); animation:spin 6s linear infinite; }
+    .orbit-wrap .dot { position:absolute; width:12px; height:12px; border-radius:50%; top:-6px; left:calc(50% - 6px); background:#0ea5e9; box-shadow:0 0 14px #0ea5e9; }
+    .orbit-wrap .r2 .dot { background:#6366f1; box-shadow:0 0 14px #6366f1; }
+    .orbit-wrap .r3 .dot { background:#f97316; box-shadow:0 0 14px #f97316; }
+    .orbit-core { position:absolute; inset:70px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle,#fff,#bae6fd); color:#0284c7; font-size:26px; box-shadow:0 0 30px rgba(14,165,233,0.6); animation:corePulse 2.5s ease-in-out infinite; }
+    .orbit-core i { animation:gearSpin 8s linear infinite; }
+    @keyframes gearSpin { to{transform:rotate(360deg)} }
+    @keyframes corePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
+    .stat-num { font-family:'Orbitron',sans-serif; }
+    .typing-cursor::after { content:'▍'; margin-left:2px; color:#0ea5e9; animation:blink 1s steps(1) infinite; }
+    @keyframes blink { 50%{opacity:0} }
+
+    .ticker { overflow:hidden; white-space:nowrap; mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent); -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent); }
+    .ticker-track { display:inline-flex; gap:2.5rem; animation:marquee 38s linear infinite; }
+    .ticker:hover .ticker-track { animation-play-state:paused; }
+    @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+    .tab-active { background:linear-gradient(135deg,#0ea5e9,#6366f1); color:#fff; box-shadow:0 6px 18px rgba(14,165,233,0.45); }
+    .tab-idle { color:#334e68; }
+    .tab-idle:hover { background:rgba(255,255,255,0.9); color:#0284c7; }
+    .modal-overlay { animation:fadeIn .25s ease both; }
+    .modal-panel { animation:popIn .4s cubic-bezier(.2,.9,.3,1.2) both; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes popIn { from{opacity:0; transform:scale(.85) translateY(30px)} to{opacity:1; transform:none} }
+    .field:focus { box-shadow:0 0 0 3px rgba(14,165,233,0.25), 0 0 18px rgba(14,165,233,0.25); outline:none; }
+    .chat-fab { animation:fabFloat 3.5s ease-in-out infinite; }
+    @keyframes fabFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+    .chat-fab::before { content:''; position:absolute; inset:-6px; border-radius:50%; border:2px solid rgba(14,165,233,0.5); animation:ripple 2.2s ease-out infinite; }
+    @keyframes ripple { from{transform:scale(.9); opacity:1} to{transform:scale(1.6); opacity:0} }
+    .msg-in { animation:msgIn .35s ease both; }
+    @keyframes msgIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+    .live-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#ef4444; animation:livePulse 1.4s infinite; }
+    @keyframes livePulse { 0%{box-shadow:0 0 0 0 rgba(239,68,68,.7)} 70%{box-shadow:0 0 0 8px rgba(239,68,68,0)} 100%{box-shadow:0 0 0 0 rgba(239,68,68,0)} }
+    ::-webkit-scrollbar { width:8px; height:8px; }
+    ::-webkit-scrollbar-track { background:rgba(186,230,253,0.4); }
+    ::-webkit-scrollbar-thumb { background:linear-gradient(#38bdf8,#6366f1); border-radius:8px; }
+
+    .warn-banner { background:linear-gradient(90deg,#fef3c7,#ffedd5); border:1.5px solid #f59e0b; box-shadow:0 6px 20px rgba(245,158,11,.25); position:relative; overflow:hidden; }
+    .warn-banner::after { content:''; position:absolute; top:0; left:-60%; width:40%; height:100%; background:linear-gradient(120deg,transparent,rgba(255,255,255,.65),transparent); transform:skewX(-20deg); animation:warnSweep 5s ease-in-out infinite; }
+    @keyframes warnSweep { 0%,70%{left:-60%} 100%{left:130%} }
+    .warn-icon { width:34px; height:34px; border-radius:50%; background:#f59e0b; color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; animation:corePulse 2s ease-in-out infinite; }
+
+    /* ---------- Course types ---------- */
+    .t-mce   { --c:#3b82f6; --bgc:#dbeafe; }
+    .t-math  { --c:#eab308; --bgc:#fef9c3; }
+    .t-sci   { --c:#8b5cf6; --bgc:#ede9fe; }
+    .t-ngn   { --c:#64748b; --bgc:#f1f5f9; }
+    .t-wri   { --c:#0b2545; --bgc:#ffffff; }
+    .t-ger   { --c:#f97316; --bgc:#ffedd5; }
+    .t-elec  { --c:#22c55e; --bgc:#dcfce7; }
+    .t-train { --c:#ef4444; --bgc:#fee2e2; }
+
+    /* ---------- Curriculum map ---------- */
+    #map-scroll { overflow-x:auto; overflow-y:hidden; border-radius:1.5rem; }
+    #map-board { position:relative; }
+    .band { position:absolute; top:0; bottom:0; }
+    .band.b1 { background:rgba(14,165,233,0.10); }
+    .band.b2 { background:rgba(99,102,241,0.06); }
+    .year-label { position:absolute; top:10px; text-align:center; font-family:'Orbitron',sans-serif; font-weight:700; font-size:13px; letter-spacing:.12em; text-transform:uppercase; text-decoration:underline; text-underline-offset:4px; color:#0b2545; }
+    .term-pill { position:absolute; top:42px; width:176px; height:46px; border-radius:12px; background:linear-gradient(135deg,#64748b,#475569); color:#fff; text-align:center; font-weight:700; font-size:13px; display:flex; flex-direction:column; justify-content:center; line-height:1.15; transition:all .4s; box-shadow:0 4px 10px rgba(15,23,42,.2); }
+    .term-pill small { font-weight:500; font-size:11px; opacity:.85; }
+    .term-pill.active { background:linear-gradient(135deg,#f97316,#ea580c); box-shadow:0 0 22px rgba(249,115,22,.55); transform:translateY(-2px) scale(1.04); }
+    .summer-label { position:absolute; text-align:center; font-size:11px; font-weight:700; text-decoration:underline; color:#334e68; }
+    #map-svg { position:absolute; left:0; top:0; z-index:1; pointer-events:none; }
+    .edge { fill:none; stroke-width:1.7; opacity:0; transition:opacity .5s, stroke-dashoffset .9s ease, stroke .2s; }
+    .edge.P { stroke:#2563eb; stroke-dasharray:1; stroke-dashoffset:1; marker-end:url(#arrP); }
+    .edge.C { stroke:#15803d; stroke-dasharray:6 5; marker-end:url(#arrC); }
+    .edge.P.on { stroke-dashoffset:0; opacity:.42; }
+    .edge.C.on { opacity:.5; }
+    .links-off .edge.on { opacity:0; }
+    .edge.on.hlUp { opacity:1; stroke-width:2.8; }
+    .edge.on.hlDown { opacity:1; stroke-width:2.8; stroke:#f97316; marker-end:url(#arrO); }
+    .edge.on.fade { opacity:.05; }
+    .mc-card { position:absolute; width:176px; height:82px; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:6px 10px;
+      border:2px solid var(--c); background:var(--bgc); color:#0b2545; border-radius:14px; cursor:pointer; transition:opacity .6s, transform .6s cubic-bezier(.2,.9,.3,1.2), box-shadow .25s, filter .4s; }
+    .mc-card:hover, .mc-card.sel { box-shadow:0 10px 28px rgba(14,165,233,.4); transform:translateY(-2px); }
+    .mc-card.dim { opacity:.3; }
+    .mc-card.up { box-shadow:0 0 0 3px rgba(37,99,235,.55); }
+    .mc-card.down { box-shadow:0 0 0 3px rgba(249,115,22,.65); }
+    .mc-card .code { font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; }
+    .mc-card .nm { font-size:11px; line-height:1.2; margin-top:2px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .mc-card .cr { font-size:10px; opacity:.65; margin-top:2px; }
+    .mc-card .badge { position:absolute; top:-8px; right:-8px; width:22px; height:22px; border-radius:50%; display:none; align-items:center; justify-content:center; font-size:11px; color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.25); }
+    
+    /* Dedicated Taking Now Button on Map Card */
+    .mc-card .btn-now { position:absolute; top:-8px; right:18px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; color:#ea580c; background:#fff; border:2px solid #f97316; box-shadow:0 2px 6px rgba(0,0,0,.2); transition:all .2s ease; z-index:4; }
+    .mc-card .btn-now:hover { transform:scale(1.2); background:#fff7ed; color:#c2410c; }
+    .overlay-on .st-prog .btn-now { background:#f97316; color:#fff; border-color:#ea580c; box-shadow:0 0 10px rgba(249,115,22,0.6); }
+
+    .overlay-on .mc-card .badge { display:flex; }
+    .overlay-on .st-done .badge { background:#10b981; }
+    .overlay-on .st-prog .badge { background:#f97316; }
+    .overlay-on .st-ready .badge { background:#0ea5e9; }
+    .overlay-on .st-blocked .badge { background:#94a3b8; }
+    .overlay-on .st-blocked { opacity:.55; }
+    .overlay-on .st-done { background:#d1fae5; border-color:#10b981; }
+    .tl-btn { padding:6px 10px; border-radius:10px; font-size:11px; font-weight:700; white-space:nowrap; background:rgba(255,255,255,.7); color:#475569; border:1px solid rgba(14,165,233,.2); transition:all .25s; }
+    .tl-btn:hover { background:#fff; color:#0284c7; }
+    .tl-btn.done { background:#e0f2fe; color:#0369a1; }
+    .tl-btn.cur { background:linear-gradient(135deg,#f97316,#ea580c); color:#fff; border-color:transparent; box-shadow:0 4px 14px rgba(249,115,22,.4); }
+    .toggle { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:#334e68; cursor:pointer; }
+    .toggle input { accent-color:#0ea5e9; }
+    .swatch { display:inline-block; width:12px; height:12px; border-radius:4px; border:2px solid var(--c); background:var(--bgc); vertical-align:-2px; margin-right:5px; }
+
+    /* ---------- Combined map + advising ---------- */
+    #map-top, #my-plan, #step4 { scroll-margin-top:110px; }
+    .mc-card { user-select:none; -webkit-user-select:none; }
+    .mc-card .info { position:absolute; top:3px; left:6px; font-size:12px; line-height:1; padding:2px; color:#0284c7; opacity:.55; cursor:pointer; z-index:3; }
+    .mc-card .info:hover, .mc-card .info:focus-visible { opacity:1; color:#f97316; }
+    .mc-card .badge { width:24px; height:24px; top:-9px; right:-9px; background:#fff; border:2px solid #94a3b8; font-size:12px; z-index:4; }
+    .overlay-on .st-done .badge, .overlay-on .st-prog .badge, .overlay-on .st-blocked .badge, .overlay-on .st-together .badge { border-color:transparent; }
+    .overlay-on .st-ready .badge { border-color:#0ea5e9; }
+    .mc-card:hover .badge:empty, .mc-card:hover .badge { border-color:#0ea5e9; }
+    .overlay-on .st-together .badge { background:#6366f1; }
+    .overlay-on .st-ready { box-shadow:0 0 0 2px rgba(14,165,233,.5); }
+    .overlay-on .st-together { box-shadow:0 0 0 2px rgba(99,102,241,.5); }
+    .overlay-on .st-prog { background:#fff7ed; border-color:#f97316; border-style:dashed; }
+    .overlay-on .st-next { border-color:#f97316; animation:nextGlow 2.2s ease-in-out infinite; }
+    @keyframes nextGlow { 0%,100%{box-shadow:0 0 0 2px rgba(249,115,22,.55),0 0 0 0 rgba(249,115,22,0)} 50%{box-shadow:0 0 0 3px rgba(249,115,22,.85),0 0 18px rgba(249,115,22,.55)} }
+    .mc-card.pop { animation:cardPop .9s cubic-bezier(.2,.9,.3,1.4); }
+    @keyframes cardPop { 0%{transform:scale(1)} 35%{transform:scale(1.12); box-shadow:0 0 28px rgba(14,165,233,.9)} 100%{transform:scale(1)} }
+    .overlay-on .mc-card.ghost { opacity:.1; }
+    .overlay-on .mc-card.dim { opacity:.3; }
+    .lg-dot { display:inline-flex; width:18px; height:18px; border-radius:50%; align-items:center; justify-content:center; color:#fff; font-size:9px; font-style:normal; }
+    .lg-ring { display:inline-block; width:22px; height:13px; border-radius:5px; border:2px solid #f97316; box-shadow:0 0 8px rgba(249,115,22,.6); }
+    .opt-chip { display:inline-flex; align-items:baseline; gap:6px; padding:4px 10px; border-radius:999px; font-size:11.5px; font-weight:700; background:#e0f2fe; color:#0369a1; border:1px solid #7dd3fc; transition:transform .2s, box-shadow .2s; }
+    .opt-chip small { font-size:10px; font-weight:500; opacity:.7; }
+    .opt-chip:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(14,165,233,.35); }
+    .opt-chip.tg { background:#eef2ff; color:#4338ca; border-color:#a5b4fc; }
+    .opt-chip.bk { background:#fef3c7; color:#b45309; border-color:#fcd34d; }
+
+    /* ---------- Planner ---------- */
+    .step-dot { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; background:#fff; color:#64748b; border:2px solid #bae6fd; transition:all .3s; flex-shrink:0; }
+    .step-item.done .step-dot { background:linear-gradient(135deg,#10b981,#059669); color:#fff; border-color:transparent; }
+    .step-item.cur .step-dot { background:linear-gradient(135deg,#f97316,#ea580c); color:#fff; border-color:transparent; box-shadow:0 0 0 5px rgba(249,115,22,.2); }
+    .term-sec { border:1px solid rgba(14,165,233,.22); border-radius:14px; background:rgba(255,255,255,.55); overflow:hidden; }
+    .term-head { width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px 14px; text-align:left; }
+    .term-head .chev { font-size:10px; transition:transform .25s; color:#0284c7; }
+    .term-head[aria-expanded="true"] .chev { transform:rotate(90deg); }
+    .crs-row { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; padding:8px 12px; border-top:1px solid rgba(14,165,233,.14); border-left:4px solid var(--c); background:linear-gradient(90deg,var(--bgc),transparent 55%); }
+    .crs-row[data-st="done"] { background:linear-gradient(90deg,#d1fae5,transparent 70%); }
+    .crs-row[data-st="prog"] { background:linear-gradient(90deg,#ffedd5,transparent 70%); }
+    .seg { display:inline-flex; border-radius:10px; overflow:hidden; border:1px solid rgba(14,165,233,.3); background:rgba(255,255,255,.85); flex-shrink:0; }
+    .seg button { padding:5px 9px; font-size:10.5px; font-weight:700; color:#475569; transition:background .2s,color .2s; }
+    .seg button:hover { background:#e0f2fe; }
+    .seg button[aria-pressed="true"][data-st="none"] { background:#e2e8f0; color:#334155; }
+    .seg button[aria-pressed="true"][data-st="prog"] { background:linear-gradient(135deg,#fb923c,#f97316); color:#fff; }
+    .seg button[aria-pressed="true"][data-st="done"] { background:linear-gradient(135deg,#10b981,#059669); color:#fff; }
+    .chip { display:inline-flex; align-items:center; gap:5px; padding:2px 8px; border-radius:999px; font-size:10.5px; font-weight:700; }
+    .chip.ok { background:#d1fae5; color:#047857; }
+    .chip.mid { background:#fef3c7; color:#b45309; }
+    .chip.no { background:#fee2e2; color:#b91c1c; }
+    .chip.info { background:#e0f2fe; color:#0369a1; }
+    .res-item { padding:9px 11px; border-radius:12px; background:rgba(255,255,255,.75); border:1px solid rgba(14,165,233,.18); }
+    .link-chip { padding:2px 8px; border-radius:8px; font-size:11px; font-weight:600; background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; cursor:pointer; }
+    .link-chip:hover { background:#0ea5e9; color:#fff; }
+    .field { width:100%; padding:8px 12px; background:rgba(240,249,255,.8); border:1px solid #bae6fd; border-radius:10px; font-size:13px; }
+    .tbl { width:100%; font-size:11.5px; border-collapse:collapse; }
+    .tbl th { text-align:left; padding:6px 8px; font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:#64748b; border-bottom:2px solid #bae6fd; }
+    .tbl td { padding:6px 8px; border-bottom:1px solid #e0f2fe; vertical-align:top; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
+
+  <div class="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+    <img src="background.jpg" alt="" class="w-full h-full object-cover opacity-25 filter brightness-105 contrast-90" onerror="this.style.display='none'">
+  </div>
+
+  <canvas id="bg-canvas"></canvas>
+  <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+  <div class="grid-floor"></div>
+  <div class="scanline"></div>
+
+  <div class="content-layer flex flex-col min-h-screen">
+
+  <header class="site-header">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between gap-4">
+      <div class="flex items-center space-x-4">
+        <div class="logo-ring">
+          <div class="inner">
+            <img src="icon1.png" alt="Department Logo" class="w-full h-full object-cover" onerror="this.onerror=null; this.src=LOGO_FALLBACK;">
+          </div>
+        </div>
+        <div class="flex flex-col space-y-0.5 items-start text-left">
+          <span class="text-xs sm:text-sm font-black uppercase tracking-widest text-indigo-950 block leading-none">AUS - College of Engineering</span>
+          <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-warmorange-600 block leading-tight">Department of Mechanical Engineering</span>
+          <h1 class="font-tech text-sm sm:text-lg font-bold gradient-text tracking-wide leading-none mt-1">Pre Advising Portal</h1>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button onclick="setView('download')" class="btn-glow pulse-btn px-3.5 py-2 bg-gradient-to-r from-warmorange-500 to-warmorange-600 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-1.5 active:scale-95">
+          <i class="fa-solid fa-file-arrow-down text-sm"></i><span>Download for advisor</span>
+        </button>
+        <button onclick="toggleDataMenu()" class="p-2 text-slate-600 hover:text-sky-600 focus:outline-none transition-transform hover:rotate-90" title="Record options" aria-label="Record options">
+          <i class="fa-solid fa-ellipsis-vertical text-lg"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="data-menu" class="hidden bg-sky-100/80 backdrop-blur border-b border-sky-200 px-4 py-2.5">
+      <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between text-xs text-slate-700 gap-2">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-database text-sky-600"></i>
+          <span>Your selections save in this browser only. Download your record to share it with your advisor.</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="downloadRecord()" class="btn-glow px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-800 rounded border border-slate-300 font-medium"><i class="fa-solid fa-download mr-1"></i>Download record</button>
+          <label class="btn-glow px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-800 rounded border border-slate-300 font-medium cursor-pointer">
+            <i class="fa-solid fa-upload mr-1"></i>Load a record
+            <input type="file" accept=".json,application/json" class="hidden" onchange="importRecord(event)">
+          </label>
+          <button id="reset-btn" onclick="resetAll()" class="btn-glow px-2.5 py-1 bg-red-500 hover:bg-red-600 text-white rounded"><i class="fa-solid fa-rotate-left mr-1"></i>Reset all</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <section class="glass hud hero rounded-3xl p-6 sm:p-8 mb-6">
+      <div class="sheen" aria-hidden="true"></div>
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative">
+        <div class="flex-1 min-w-0">
+          <span class="px-3 py-1 text-[11px] font-bold rounded-full bg-sky-100 text-sky-700 border border-sky-300 uppercase tracking-widest">Mechanical Engineering Advising Guide</span>
+          <h2 class="font-tech text-2xl sm:text-3xl font-bold text-slate-900 mt-3 leading-tight">Course Advising — From Year 1 to Graduation</h2>
+          <p class="text-slate-600 text-sm mt-3 leading-relaxed max-w-xl"><span id="typed-text" class="typing-cursor"></span></p>
+          <div class="grid grid-cols-3 gap-3 mt-6 max-w-lg">
+            <div class="rounded-2xl bg-white/70 border border-sky-200 p-3 text-center"><div id="stat-credits" class="stat-num text-2xl font-black text-sky-600">0</div><div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Credits</div></div>
+            <div class="rounded-2xl bg-white/70 border border-indigo-200 p-3 text-center"><div id="stat-courses" class="stat-num text-2xl font-black text-indigo-600">0</div><div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Courses</div></div>
+            <div class="rounded-2xl bg-white/70 border border-orange-200 p-3 text-center"><div id="stat-links" class="stat-num text-2xl font-black text-warmorange-500">0</div><div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Prereq Links</div></div>
+          </div>
+        </div>
+        <div class="orbit-wrap mx-auto lg:mx-0" aria-hidden="true">
+          <div class="ring r1"><span class="dot"></span></div><div class="ring r2"><span class="dot"></span></div><div class="ring r3"><span class="dot"></span></div>
+          <div class="orbit-core"><i class="fa-solid fa-gear"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="glass rounded-xl py-2.5 mb-6 ticker">
+      <div class="ticker-track text-[11px] font-mono font-semibold text-sky-700 uppercase tracking-widest" id="ticker-track"></div>
+    </div>
+
+    
+    <!-- ============ MAP VIEW ============ -->
+    <div id="map-top">
+      <div role="alert" class="warn-banner rounded-2xl px-4 py-3 mb-3 flex items-center gap-3">
+        <span class="warn-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <span class="text-sm font-bold text-amber-900">Check with your advisor for approval before registration</span>
+      </div>
+      <div id="stepper" class="glass rounded-2xl p-4 mb-3 grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+      <div class="glass rounded-2xl p-3.5 mb-3 flex flex-wrap items-center gap-3">
+        <div class="flex items-center gap-1.5">
+          <button id="jr-play" onclick="togglePlay()" class="btn-glow px-3.5 py-2 bg-gradient-to-r from-sky-500 to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md"><i class="fa-solid fa-play"></i><span>Play journey</span></button>
+          <button onclick="stepBy(-1)" class="btn-glow w-8 h-8 rounded-lg bg-white/80 border border-sky-200 text-sky-600 text-xs" aria-label="Previous term"><i class="fa-solid fa-backward-step"></i></button>
+          <button onclick="stepBy(1)" class="btn-glow w-8 h-8 rounded-lg bg-white/80 border border-sky-200 text-sky-600 text-xs" aria-label="Next term"><i class="fa-solid fa-forward-step"></i></button>
+          <button onclick="showAll()" class="btn-glow px-3 h-8 rounded-lg bg-white/80 border border-sky-200 text-sky-600 text-xs font-semibold">Show all</button>
+        </div>
+        <div class="flex-1 min-w-[220px]">
+          <div class="flex items-baseline justify-between gap-3">
+            <span id="jr-label" class="font-tech text-xs font-bold text-slate-800">Press play to walk through the four years</span>
+            <span class="text-[11px] font-mono text-slate-600 whitespace-nowrap"><span id="jr-credits" class="font-bold text-sky-700">0</span> / <span id="jr-total"></span> credits</span>
+          </div>
+          <div class="h-1.5 rounded-full bg-sky-100 mt-1.5 overflow-hidden"><div id="jr-bar" class="h-full rounded-full transition-all duration-700" style="width:0;background:linear-gradient(90deg,#0ea5e9,#6366f1,#f97316)"></div></div>
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <select id="jr-speed" onchange="speed=parseFloat(this.value)" class="px-2 py-1.5 bg-white/80 border border-sky-200 rounded-lg text-xs" aria-label="Playback speed">
+            <option value="0.6">Slow</option><option value="1" selected>Normal</option><option value="1.8">Fast</option>
+          </select>
+          <label class="toggle"><input type="checkbox" id="opt-links" checked onchange="applyOptions()"> Show links</label>
+        </div>
+      </div>
+
+      <div id="jr-timeline" class="flex gap-1.5 overflow-x-auto pb-2 mb-2"></div>
+
+      <div class="glass rounded-2xl p-4 mb-3">
+        <div class="flex flex-wrap items-end gap-3">
+          <div class="min-w-[210px]">
+            <label for="st-term" class="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">I am currently in</label>
+            <select id="st-term" class="field" onchange="onTermChange()"></select>
+          </div>
+          <button onclick="prefill()" class="btn-glow px-3 py-2.5 bg-gradient-to-r from-sky-500 to-indigo-500 text-white rounded-xl text-xs font-bold"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Pre-fill from the standard plan</button>
+          <button id="clear-btn" onclick="clearCourses()" class="btn-glow px-3 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-xs font-semibold"><i class="fa-solid fa-eraser mr-1"></i>Clear courses</button>
+          <p class="text-[11px] text-slate-500 flex-1 min-w-[220px] leading-relaxed">Click a course card to mark it as <b>Completed</b>. Click the <i class="fa-solid fa-hourglass-half text-amber-600 font-bold"></i> button on any course box to set it as <b>Taking Now</b>.</p>
+        </div>
+        <div id="next-strip" class="mt-3 pt-3 border-t border-sky-100 space-y-2" aria-live="polite"></div>
+      </div>
+
+      <div class="glass hud rounded-3xl">
+        <div id="map-scroll"><div id="map-board"></div></div>
+      </div>
+
+      <div class="glass rounded-xl p-3.5 mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-slate-700">
+        <span class="font-bold uppercase tracking-wider text-slate-500">Legend</span>
+        <span id="legend-types" class="flex flex-wrap gap-x-4 gap-y-1"></span>
+        <span class="flex items-center gap-1.5"><svg width="34" height="8"><line x1="0" y1="4" x2="34" y2="4" stroke="#2563eb" stroke-width="2"/></svg>Prerequisite</span>
+        <span class="flex items-center gap-1.5"><svg width="34" height="8"><line x1="0" y1="4" x2="34" y2="4" stroke="#15803d" stroke-width="2" stroke-dasharray="6 5"/></svg>Prerequisite / concurrent</span>
+        <span class="flex items-center gap-1.5"><svg width="34" height="8"><line x1="0" y1="4" x2="34" y2="4" stroke="#f97316" stroke-width="2.5"/></svg>Unlocks (on hover)</span>
+      </div>
+      <div class="glass rounded-xl p-3.5 mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-slate-700">
+        <span class="font-bold uppercase tracking-wider text-slate-500">Your status</span>
+        <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#fff;border:2px solid #94a3b8"></i>Not ticked yet</span>
+        <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#10b981"><i class="fa-solid fa-check"></i></i>Completed</span>
+        <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#f97316"><i class="fa-solid fa-hourglass-half"></i></i>Taking now button</span>
+        <span class="flex items-center gap-1.5"><i class="lg-ring" style="border-color:#0ea5e9;box-shadow:0 0 6px rgba(14,165,233,.5)"></i>Available now</span>
+        <span class="flex items-center gap-1.5"><i class="lg-ring" style="border-color:#6366f1;box-shadow:0 0 6px rgba(99,102,241,.5)"></i>Take together with another course</span>
+        <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#94a3b8"><i class="fa-solid fa-lock"></i></i>Locked until prerequisites are done</span>
+        <span class="flex items-center gap-1.5"><i class="lg-ring"></i>Suggested for next term</span>
+      </div>
+      <p class="text-[11px] text-slate-500 mt-3 leading-relaxed">Hover or focus a course to trace what it needs and what it unlocks. Use the small info icon on a course for details. Swipe sideways on small screens to follow the years. Based on the department course flowchart; the * and ** marks come from that chart, so confirm their conditions with your advisor.</p>
+    </div>
+
+    <!-- ============ PLANNER VIEW ============ -->
+    <div id="my-plan" class="mt-8">
+      <div id="record-banner" class="hidden mb-4"></div>
+
+      <div class="grid xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-6">
+        <div class="space-y-6 min-w-0">
+          <section class="glass hud rounded-2xl p-5">
+            <h3 class="font-tech text-sm font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-user-graduate text-warmorange-500"></i> Your details</h3>
+            <div class="grid sm:grid-cols-2 gap-3 mt-4 text-xs">
+              <div><label for="st-name" class="block font-semibold text-slate-700 mb-1">Full name *</label><input id="st-name" class="field" oninput="onStudentInput()" autocomplete="name"></div>
+              <div><label for="st-id" class="block font-semibold text-slate-700 mb-1">Student ID *</label><input id="st-id" class="field" oninput="onStudentInput()"></div>
+              <div><label for="st-email" class="block font-semibold text-slate-700 mb-1">Email <span class="text-slate-400 font-normal">(optional)</span></label><input id="st-email" type="email" class="field" oninput="onStudentInput()" autocomplete="email"></div>
+              <div><label for="st-advisor" class="block font-semibold text-slate-700 mb-1">Advisor <span class="text-slate-400 font-normal">(optional)</span></label><input id="st-advisor" class="field" oninput="onStudentInput()"></div>
+              </div>
+          </section>
+
+          <details class="glass hud rounded-2xl p-5">
+            <summary class="cursor-pointer font-tech text-sm font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-list-check text-warmorange-500"></i> Prefer a list? Mark courses by term</summary>
+            <div class="flex justify-end gap-2 text-[11px] font-semibold mt-3"><button onclick="expandAll(true)" class="text-sky-600 hover:text-warmorange-600">Expand all</button><span class="text-slate-300">|</span><button onclick="expandAll(false)" class="text-sky-600 hover:text-warmorange-600">Collapse all</button></div>
+            <div id="course-list" class="space-y-2.5 mt-3"></div>
+          </details>
+        </div>
+
+        <aside class="min-w-0 xl:sticky xl:top-28 xl:self-start xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto xl:pr-1">
+          <section class="glass hud rounded-2xl p-5">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <h3 class="font-tech text-sm font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-route text-warmorange-500"></i> Your plan</h3>
+              <a href="#step4" onclick="document.getElementById('step4').scrollIntoView({behavior:'smooth'});return false;" class="text-[11px] font-bold text-sky-600 hover:text-warmorange-600">Jump to download <i class="fa-solid fa-arrow-down"></i></a>
+            </div>
+            <div id="results" class="mt-4 space-y-5"></div>
+          </section>
+        </aside>
+      </div>
+
+      <section id="step4" class="glass hud rounded-2xl p-5 mt-6">
+        <h3 class="font-tech text-sm font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-file-arrow-down text-warmorange-500"></i> Download for your advisor</h3>
+        <div class="grid md:grid-cols-2 gap-5 mt-4 text-xs">
+          <div>
+            <label for="st-notes" class="block font-semibold text-slate-700 mb-1">Notes for your advisor <span class="text-slate-400 font-normal">(optional)</span></label>
+            <textarea id="st-notes" rows="4" class="field" oninput="onStudentInput()" placeholder="For example: I want to take MCE 331 and MCE 323 together next term."></textarea>
+          </div>
+          <div class="space-y-2.5">
+            <button id="dl-report" onclick="downloadReport()" class="btn-glow w-full px-4 py-2.5 bg-gradient-to-r from-warmorange-500 to-warmorange-600 text-white rounded-xl text-xs font-bold shadow-md"><i class="fa-solid fa-file-lines mr-1.5"></i>Download advisor report (.html)</button>
+            <button id="dl-json" onclick="downloadRecord()" class="btn-glow w-full px-4 py-2.5 bg-gradient-to-r from-sky-500 to-indigo-500 text-white rounded-xl text-xs font-bold shadow-md"><i class="fa-solid fa-file-code mr-1.5"></i>Download record (.json)</button>
+            <label class="btn-glow w-full px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-xs font-semibold flex items-center justify-center cursor-pointer"><i class="fa-solid fa-upload mr-1.5"></i>Load a saved record
+              <input type="file" accept=".json,application/json" class="hidden" onchange="importRecord(event)"></label>
+            <p id="dl-hint" class="text-[11px] text-slate-500 leading-relaxed"></p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="text-center text-[11px] text-slate-500 py-6 px-4 font-mono tracking-wider">
+    <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1.5 align-middle" style="animation: corePulse 1.6s infinite;"></span>
+    AUS · MECHANICAL ENGINEERING · COURSE ADVISING — SYSTEM ONLINE
+    <div class="mt-1 normal-case tracking-normal font-sans">Built from the department course flowchart (130 credits). Your advisor and the official degree audit make the final decision.</div>
+  </footer>
+  </div>
+
+  <!-- COURSE MODAL -->
+  <div id="course-modal" class="modal-overlay hidden fixed inset-0 bg-sky-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="if(event.target===this)closeCourse()">
+    <div class="modal-panel glass hud rounded-2xl max-w-xl w-full p-6 space-y-4 relative max-h-[90vh] overflow-y-auto" style="background:rgba(255,255,255,0.94)">
+      <button onclick="closeCourse()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-lg transition-transform hover:rotate-90" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      <div id="course-modal-body" class="space-y-4"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] hidden px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold shadow-xl"></div>
+
+  <!-- ASSISTANT -->
+  <div id="floating-chat-container" class="fixed bottom-5 right-5 z-50">
+    <button id="floating-chat-btn" onclick="toggleFloatingChat()" class="chat-fab relative w-14 h-14 bg-gradient-to-br from-sky-400 to-indigo-500 hover:from-sky-500 hover:to-indigo-600 text-white rounded-full flex items-center justify-center shadow-xl border-2 border-white transition-all hover:scale-110" aria-label="Advising assistant">
+      <i id="chat-icon-open" class="fa-solid fa-robot text-lg"></i><i id="chat-icon-close" class="fa-solid fa-xmark text-lg hidden"></i>
+    </button>
+    <div id="floating-chat-window" class="modal-panel hidden absolute bottom-20 right-0 w-[92vw] sm:w-[360px] h-[450px] bg-white/95 backdrop-blur rounded-2xl shadow-2xl border border-sky-200 flex flex-col overflow-hidden">
+      <div class="p-3.5 bg-gradient-to-r from-sky-500 to-indigo-500 text-white flex justify-between items-center">
+        <div class="flex items-center space-x-2"><i class="fa-solid fa-robot text-warmorange-300"></i><span class="font-bold text-xs">Advising Assistant</span><span class="w-2 h-2 rounded-full bg-emerald-300" style="animation: corePulse 1.5s infinite;"></span></div>
+        <button onclick="toggleFloatingChat()" class="text-slate-100 hover:text-white text-sm" aria-label="Close assistant"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="widget-chat-messages" class="flex-grow p-3 overflow-y-auto space-y-3 bg-sky-50/60 text-xs">
+        <div class="msg-in bg-white border border-sky-100 rounded-xl p-3 text-slate-700 shadow-sm">Ask me about a course, for example "What do I need for MCE 331?", or ask "What can I take next?" after filling in your plan.</div>
+      </div>
+      <form onsubmit="handleChat(event)" class="p-2 bg-white border-t border-sky-100 flex gap-1.5">
+        <input type="text" id="widget-chat-input" placeholder="Ask about a course or next term..." class="flex-grow bg-sky-50 text-slate-800 text-xs px-3 py-2 rounded-lg border border-sky-200 focus:outline-none focus:border-sky-500">
+        <button type="submit" class="btn-glow bg-sky-500 text-white px-3 py-2 rounded-lg text-xs font-semibold" aria-label="Send"><i class="fa-solid fa-paper-plane"></i></button>
+      </form>
+    </div>
+  </div>
+<script>
+// ==== PURE-START ====
+const LOGO_FALLBACK = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><rect width='48' height='48' fill='%230ea5e9'/><text x='24' y='31' font-size='20' font-family='Arial' font-weight='700' text-anchor='middle' fill='white'>ME</text></svg>";
+
+const TYPE_LABELS = { mce:'Major core (MCE)', math:'Mathematics', sci:'Basic science', ngn:'NGN core', wri:'Writing', ger:'GER-Core / IEN', elec:'Elective', train:'Professional training' };
+const TERM_COL = { Y1F:0, Y1S:1, Y2F:2, Y2S:3, Y3F:4, Y3S:5, SUM:5, Y4F:6, Y4S:7 };
+const TERMS = [
+  {id:'Y1F',year:1,sem:'Fall'},{id:'Y1S',year:1,sem:'Spring'},{id:'Y2F',year:2,sem:'Fall'},{id:'Y2S',year:2,sem:'Spring'},
+  {id:'Y3F',year:3,sem:'Fall'},{id:'Y3S',year:3,sem:'Spring'},{id:'SUM',year:3,sem:'Summer'},{id:'Y4F',year:4,sem:'Fall'},{id:'Y4S',year:4,sem:'Spring'}
+].map((t,i)=>({...t, idx:i, col:TERM_COL[t.id]}));
+
+// id, code, name, credits, term, row, type, prerequisites, prerequisite-or-concurrent, star
+const K = (id,code,name,cr,term,row,type,pre=[],co=[],star='') => ({id,code,name,cr,term,row,type,pre,co,star});
+const COURSES = [
+  // Year 1 Fall
+  K('NGN110','NGN 110','Intro. to Engineering & Computing',2,'Y1F',0,'ngn'),
+  K('MTH103','MTH 103','Calculus I',3,'Y1F',1,'math'),
+  K('PHY101','PHY 101 + Lab','General Physics I',4,'Y1F',2,'sci',[],['MTH103']),
+  K('CHM101','CHM 101 + Lab','General Chemistry I',4,'Y1F',3,'sci'),
+  K('WRI101','WRI 101','Academic Writing I',3,'Y1F',5,'wri'),
+  // Year 1 Spring
+  K('NGN112','NGN 112','Intro. to AI & Data Sci.',3,'Y1S',0,'ngn'),
+  K('MTH104','MTH 104','Calculus II',3,'Y1S',1,'math',['MTH103']),
+  K('PHY102','PHY 102 + Lab','General Physics II',4,'Y1S',2,'sci',['PHY101']),
+  K('WRI102','WRI 102','Academic Writing II',3,'Y1S',5,'wri',['WRI101']),
+  K('GERHIB','GER-Core','Human Interaction Behavior',3,'Y1S',6,'ger'),
+  // Year 2 Fall
+  K('NGN211','NGN 211','Intro. to Eng. Proba. & Statistics',3,'Y2F',0,'ngn',['MTH103']),
+  K('MCE216L','MCE 216L','Intro. to Eng. Drawing & Workshop',1,'Y2F',1,'mce'),
+  K('MCE220','MCE 220','Statics',3,'Y2F',2,'mce',['PHY101']),
+  K('MCE230','MCE 230','Materials Sci.',3,'Y2F',3,'mce',['CHM101']),
+  K('MCE241','MCE 241','Thermodynamics I',3,'Y2F',4,'mce',['PHY101']),
+  K('ENG204','ENG 204','Adv. Academic Writing',3,'Y2F',5,'wri',['WRI102']),
+  // Year 2 Spring
+  K('MCE222','MCE 222','Dynamics',3,'Y2S',0,'mce',['MTH104','MCE220']),
+  K('MCE223','MCE 223','Mechanics of Materials',3,'Y2S',1,'mce',['MCE220']),
+  K('MCE226L','MCE 226L','Comp. App. in Mech. Eng. I',1,'Y2S',2,'mce'),
+  K('MCE236L','MCE 236L','Solid Modeling',1,'Y2S',3,'mce',['MCE216L']),
+  K('MCE240','MCE 240','Fluid Mechanics',3,'Y2S',4,'mce',['MTH104','MCE220']),
+  K('MTH225','MTH 225','Diff. Equa. & Linear Algebra',3,'Y2S',5,'math',['MTH104']),
+  K('IEN301','IEN 301','Innov. & Entrepreneurship Mindset',3,'Y2S',6,'ger'),
+  // Year 3 Fall
+  K('MCE310','MCE 310','Fund. of Electromech. Sys.',3,'Y3F',0,'mce',['MCE222','PHY102'],['MCE326L']),
+  K('MCE323','MCE 323','Mechanical Design',3,'Y3F',1,'mce',['MCE223'],['MCE331']),
+  K('MCE326L','MCE 326L','Comp. App. in Mech. Eng. II',1,'Y3F',2,'mce',['MCE226L']),
+  K('MCE331','MCE 331','Manufacturing Proc.',3,'Y3F',3,'mce',['MCE216L','MCE220','MCE230']),
+  K('MCE332L','MCE 332L','Mat. & Manu. Proc. Lab',1,'Y3F',4,'mce',[],['MCE331']),
+  K('MTH203','MTH 203','Calculus III',3,'Y3F',5,'math',['MTH104']),
+  K('FEL1','XXXX','Free Elective',3,'Y3F',6,'elec'),
+  // Year 3 Spring
+  K('MCE313','MCE 313','Eng. Measurements',3,'Y3S',0,'mce',['MCE222'],['MCE310']),
+  K('MCE325','MCE 325','Num. Meth. in Eng.',3,'Y3S',1,'mce',['MTH225','MCE326L']),
+  K('MCE341','MCE 341','Thermodynamics II',3,'Y3S',2,'mce',['MCE241']),
+  K('MCE344','MCE 344','Heat Transfer',3,'Y3S',3,'mce',['MCE241','MCE240']),
+  K('MCE345L','MCE 345L','Thermofluids Lab',1,'Y3S',4,'mce',[],['MCE341','MCE344']),
+  K('GERART','GER-Core','Arts_Literature',3,'Y3S',5,'ger'),
+  // Summer
+  K('MCE397','MCE 397','Professional Training in Mech. Eng.',0,'SUM',6,'train',['ENG204'],[],'*'),
+  // Year 4 Fall
+  K('MCE490','MCE 490','Design Project I',1,'Y4F',0,'mce',['MCE313'],['MCE323','MCE345L'],'**'),
+  K('MCE313L','MCE 313L','Eng. Measurements Lab',1,'Y4F',1,'mce',[],['MCE313']),
+  K('MCE410','MCE 410','Control Systems',3,'Y4F',2,'mce',['MCE310','MCE313L']),
+  K('MEL1','MCE xxxx','Major Elective',3,'Y4F',3,'elec'),
+  K('MEL2','MCE xxxx','Major Elective',3,'Y4F',4,'elec'),
+  K('GERHIST','GER-Core','Hist_Culture_Arab',3,'Y4F',5,'ger'),
+  K('GERX','GER-Core','To be selected',3,'Y4F',6,'ger'),
+  // Year 4 Spring
+  K('MCE491','MCE 491','Design Project II',2,'Y4S',0,'mce',['MCE490']),
+  K('MCE415L','MCE 415L','Dynamics & Control Sys. Lab',1,'Y4S',1,'mce',[],['MCE410']),
+  K('MEL3','MCE xxxx','Major Elective',3,'Y4S',2,'elec'),
+  K('MEL4','MCE xxxx','Major Elective',3,'Y4S',3,'elec'),
+  K('FEL2','XXXX','Free Elective',3,'Y4S',4,'elec'),
+  K('GERCRIT','GER-Core','Culture_Critical',3,'Y4S',5,'ger')
+];
+const BYID = {}; COURSES.forEach(c=>{ BYID[c.id]=c; c.col=TERM_COL[c.term]; });
+const termIndex = id => TERMS.find(t=>t.id===id).idx;
+COURSES.forEach(c=>{ c.ti = termIndex(c.term); });
+TERMS.forEach(t=>{ t.courses = COURSES.filter(c=>c.term===t.id); t.cr = t.courses.reduce((s,c)=>s+c.cr,0); });
+const TOTAL_CR = COURSES.reduce((s,c)=>s+c.cr,0);
+const EDGES = [];
+COURSES.forEach(c=>{ c.pre.forEach(p=>EDGES.push({from:p,to:c.id,type:'P'})); c.co.forEach(q=>EDGES.push({from:q,to:c.id,type:'C'})); });
+
+// transitive prerequisites / dependants
+const ANC = {}, DESC = {};
+COURSES.forEach(c=>{ ANC[c.id]=new Set(); DESC[c.id]=new Set(); });
+(function(){
+  const walk = (id,seen,next) => { next(id).forEach(n=>{ if(!seen.has(n)){ seen.add(n); walk(n,seen,next); } }); };
+  const dn = {}; COURSES.forEach(c=>dn[c.id]=[]);
+  EDGES.forEach(e=>dn[e.from].push(e.to));
+  COURSES.forEach(c=>{ walk(c.id, ANC[c.id], id=>[...BYID[id].pre,...BYID[id].co]); walk(c.id, DESC[c.id], id=>dn[id]); });
+})();
+
+const lbl = id => { const c=BYID[id]; return c.code==='GER-Core' ? 'GER-Core: '+c.name : c.type==='elec' ? c.name+' ('+c.code+')' : c.code.replace(' + Lab',''); };
+const termLabel = t => t.sem==='Summer' ? 'Summer (after Year 3)' : 'Year '+t.year+' · '+t.sem;
+
+// ---------- planning logic ----------
+const state = { student:{name:'',id:'',email:'',advisor:''}, notes:'', termId:'Y1F', status:{}, open:{}, downloaded:false, loaded:null };
+
+const isYear4 = c => c.ti >= termIndex('Y4F');
+function evaluate(c){
+  const st = id => state.status[id];
+  const satisfied = id => st(id)==='done' || st(id)==='prog';
+  const missingPre = c.pre.filter(p=>!satisfied(p));
+  const pendingPre = c.pre.filter(p=>st(p)==='prog');
+  const coNeeded = c.co.filter(q=>!satisfied(q));
+  const coBlocked = coNeeded.filter(q=>BYID[q].pre.some(p=>!satisfied(p)));
+  const lock = isYear4(c) && termIndex(state.termId) < termIndex('SUM');
+  let s = 'ready';
+  if(lock || missingPre.length || coBlocked.length) s='blocked'; else if(coNeeded.length) s='together';
+  return {state:s, lock, missingPre, pendingPre, coNeeded, coBlocked};
+}
+function reasons(ev){
+  const out=[];
+  if(ev.lock) out.push('Year 4 course: can only be taken in Year 4');
+  if(ev.missingPre.length) out.push('Finish first: '+ev.missingPre.map(lbl).join(', '));
+  if(ev.coBlocked.length) out.push('Needs '+ev.coBlocked.map(lbl).join(', ')+' at the same time, and that course is not open yet');
+  else if(ev.coNeeded.length) out.push('Take together with: '+ev.coNeeded.map(lbl).join(', '));
+  if(ev.pendingPre.length && !ev.missingPre.length) out.push('Open once you pass: '+ev.pendingPre.map(lbl).join(', '));
+  return out;
+}
+function computePlan(){
+  const cur = termIndex(state.termId);
+  const next = cur < TERMS.length-1 ? TERMS[cur+1] : null;
+  let done=0, prog=0;
+  COURSES.forEach(c=>{ if(state.status[c.id]==='done') done+=c.cr; else if(state.status[c.id]==='prog') prog+=c.cr; });
+  const open = COURSES.filter(c=>!state.status[c.id]);
+  const ev = {}; open.forEach(c=>ev[c.id]=evaluate(c));
+  const nextList = next ? open.filter(c=>c.term===next.id) : [];
+  const catchUp = open.filter(c=>c.ti<=cur);
+  const ahead = next ? open.filter(c=>c.ti>next.idx && c.type!=='elec' && c.type!=='ger' && ev[c.id].state!=='blocked') : [];
+  const flags = [];
+  COURSES.forEach(c=>{
+    const s = state.status[c.id]; if(!s) return;
+    const badPre = c.pre.filter(p=>state.status[p]!=='done');
+    if(badPre.length) flags.push(lbl(c.id)+' is marked '+(s==='done'?'completed':'in progress')+', but '+badPre.map(lbl).join(', ')+(badPre.length>1?' are':' is')+' not marked completed.');
+    const badCo = c.co.filter(q=>!state.status[q]);
+    if(badCo.length) flags.push(lbl(c.id)+' is normally taken with or after '+badCo.map(lbl).join(', ')+', which '+(badCo.length>1?'are':'is')+' not marked.');
+  });
+  COURSES.forEach(c=>{ if(state.status[c.id] && isYear4(c) && cur<termIndex('Y4F')) flags.push(lbl(c.id)+' is a Year 4 course and can only be taken in Year 4.'); });
+  if(cur>=termIndex('Y4F') && !state.status.MCE397) flags.push('MCE 397 (0-credit summer professional training) is not marked yet.');
+  return {cur, next, done, prog, remaining: TOTAL_CR-done-prog, open, ev, nextList, catchUp, ahead, flags};
+}
+// ==== PURE-END ====
+
+// ================= HELPERS =================
+const $ = id => document.getElementById(id);
+function escapeHTML(str){ if(str===undefined||str===null) return ''; return String(str).replace(/[&<>'"]/g, t=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[t])); }
+const esc = escapeHTML;
+const ordinal = y => ['First','Second','Third','Fourth'][y-1];
+let toastTimer=null;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.remove('hidden'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.add('hidden'),4200); }
+const reduceMotion = false; // animations always on
+
+// ================= MAP LAYOUT =================
+const CW=176, CH=82, GX=48, GY=26, PADX=28, TOP=104;
+const colX = c => PADX + c*(CW+GX);
+const rowY = r => TOP + r*(CH+GY);
+let mapStep=0, playing=false, timer=null, speed=1, pinned=null, mapBuilt=false;
+
+function buildMap(){
+  const W = PADX*2 + 8*CW + 7*GX, H = TOP + 7*CH + 6*GY + 40;
+  const board = $('map-board'); board.style.width=W+'px'; board.style.height=H+'px';
+  let h='';
+  for(let y=0;y<4;y++){
+    const left = y===0?0:colX(2*y)-GX/2, right = y===3?W:colX(2*y+1)+CW+GX/2;
+    h+=`<div class="band ${y%2?'b2':'b1'}" style="left:${left}px;width:${right-left}px"></div>`;
+    h+=`<div class="year-label" style="left:${left}px;width:${right-left}px">${ordinal(y+1)} Year</div>`;
+  }
+  TERMS.filter(t=>t.id!=='SUM').forEach(t=>{ h+=`<div class="term-pill" data-term="${t.id}" style="left:${colX(t.col)}px">${t.sem}<small>(${t.cr} crs)</small></div>`; });
+  h+=`<div class="summer-label" style="left:${colX(5)}px;top:${rowY(6)-17}px;width:${CW}px">Summer</div>`;
+  h+=`<svg id="map-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><defs>
+    <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2563eb"/></marker>
+    <marker id="arrC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0L10 5L0 10z" fill="#15803d"/></marker>
+    <marker id="arrO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0L10 5L0 10z" fill="#f97316"/></marker>
+  </defs><g id="edge-layer"></g></svg>`;
+  COURSES.forEach(c=>{
+    h+=`<div class="mc-card t-${c.type} ghost" role="button" tabindex="0" data-id="${c.id}" style="left:${colX(c.col)}px;top:${rowY(c.row)}px" aria-label="${esc(c.code+' '+c.name)}. Click to change status.">
+      <span class="info" role="button" tabindex="0" aria-label="Details for ${esc(c.code)}"><i class="fa-solid fa-circle-info"></i></span>
+      <button class="btn-now" title="Toggle Taking Now" aria-label="Toggle Taking Now for ${esc(c.code)}"><i class="fa-solid fa-hourglass-half"></i></button>
+      <span class="badge"><i class="fa-solid fa-check"></i></span>
+      <span class="code">${esc(c.code)}${c.star?' '+c.star:''}</span><span class="nm">${esc(c.name)}</span><span class="cr">${c.cr} ${c.cr===1?'cr':'crs'}</span></div>`;
+  });
+  board.innerHTML=h;
+  drawEdges();
+  board.querySelectorAll('.mc-card').forEach(el=>{
+    const id=el.dataset.id;
+    el.addEventListener('mouseenter',()=>{ if(!pinned) highlight(id); });
+    el.addEventListener('focus',()=>{ if(!pinned) highlight(id); });
+    el.addEventListener('mouseleave',()=>{ if(!pinned) clearHighlight(); });
+    el.addEventListener('blur',()=>{ if(!pinned) clearHighlight(); });
+    el.addEventListener('click',e=>{ e.stopPropagation(); cardClick(id); });
+    el.addEventListener('keydown',e=>{ if(e.target!==el) return; if(e.key==='Enter'||e.key===' '){ e.preventDefault(); cardClick(id); } });
+    
+    const btnNow = el.querySelector('.btn-now');
+    btnNow.addEventListener('click', e => { e.stopPropagation(); toggleTakingNow(id); });
+    btnNow.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); e.stopPropagation(); toggleTakingNow(id); } });
+
+    const inf=el.querySelector('.info');
+    inf.addEventListener('click',e=>{ e.stopPropagation(); openCourse(id); });
+    inf.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); e.stopPropagation(); openCourse(id); } });
+  });
+  board.addEventListener('click',()=>{ if(pinned){ pinned=null; clearHighlight(); } });
+  $('legend-types').innerHTML = Object.keys(TYPE_LABELS).map(k=>`<span class="t-${k}"><i class="swatch"></i>${TYPE_LABELS[k]}</span>`).join('');
+  $('jr-total').textContent = TOTAL_CR;
+  board.classList.add('overlay-on');
+  $('jr-timeline').innerHTML = TERMS.map((t,i)=>`<button class="tl-btn" data-i="${i}" onclick="setStep(${i+1})">${t.sem==='Summer'?'Summer':'Y'+t.year+' '+t.sem}</button>`).join('');
+  mapBuilt=true;
+}
+
+function drawEdges(){
+  const outs={}, ins={};
+  EDGES.forEach((e,i)=>{ e.i=i; e.ti=BYID[e.to].ti; (outs[e.from]=outs[e.from]||[]).push(e); (ins[e.to]=ins[e.to]||[]).push(e); });
+  const spread = (map,key,other) => Object.values(map).forEach(list=>{
+    list.sort((a,b)=>BYID[a[other]].row*10+BYID[a[other]].col - (BYID[b[other]].row*10+BYID[b[other]].col));
+    list.forEach((e,k)=>{ e[key]=(k-(list.length-1)/2)*6.5; });
+  });
+  spread(outs,'oy','to'); spread(ins,'iy','from');
+  const loops={};
+  const d = EDGES.map(e=>{
+    const a=BYID[e.from], b=BYID[e.to];
+    const ay=rowY(a.row)+CH/2+e.oy, by=rowY(b.row)+CH/2+e.iy;
+    if(a.col<b.col){
+      const ax=colX(a.col)+CW, bx=colX(b.col), dx=Math.min(130,Math.max(50,(bx-ax)*0.45));
+      return `M${ax},${ay} C${ax+dx},${ay} ${bx-dx},${by} ${bx},${by}`;
+    }
+    const x=colX(a.col)+CW; loops[a.col]=(loops[a.col]||0); const bulge=22+loops[a.col]*9; loops[a.col]++;
+    return `M${x},${ay} C${x+bulge},${ay} ${x+bulge},${by} ${x},${by}`;
+  });
+  $('edge-layer').innerHTML = EDGES.map((e,i)=>`<path class="edge ${e.type}" ${e.type==='P'?'pathLength="1" ':''}data-i="${i}" d="${d[i]}"/>`).join('');
+}
+
+function applyReveal(){
+  const linksOn = $('opt-links').checked;
+  $('map-board').classList.toggle('links-off', !linksOn);
+  document.querySelectorAll('.mc-card').forEach(el=>{
+    const c=BYID[el.dataset.id], vis=c.ti<mapStep;
+    el.classList.toggle('ghost',!vis); el.style.transitionDelay = vis ? (c.row*70)+'ms' : '0ms';
+  });
+  document.querySelectorAll('.edge').forEach(el=>{ el.classList.toggle('on', EDGES[+el.dataset.i].ti<mapStep); });
+  const active = mapStep>0 ? TERMS[mapStep-1].id : null;
+  document.querySelectorAll('.term-pill').forEach(p=>p.classList.toggle('active', p.dataset.term===active || (active==='SUM'&&p.dataset.term==='Y3S')));
+  document.querySelectorAll('.tl-btn').forEach((b,i)=>{ b.classList.toggle('done', i<mapStep-1); b.classList.toggle('cur', i===mapStep-1); });
+  if(mapStep<TERMS.length){
+    const cum = TERMS.slice(0,mapStep).reduce((s,t)=>s+t.cr,0);
+    animateCount($('jr-credits'), cum);
+    $('jr-bar').style.width = (cum/TOTAL_CR*100)+'%';
+    $('jr-label').textContent = mapStep===0 ? 'Press play to walk through the four years' : (TERMS[mapStep-1].sem==='Summer' ? 'Summer · Professional training' : ordinal(TERMS[mapStep-1].year)+' Year · '+TERMS[mapStep-1].sem);
+  } else refreshProgress();
+}
+function refreshProgress(P){
+  P=P||computePlan();
+  animateCount($('jr-credits'), P.done);
+  $('jr-bar').style.width=(P.done/TOTAL_CR*100)+'%';
+  $('jr-label').textContent = (P.done||P.prog) ? 'Your progress · '+P.done+' completed, '+P.prog+' in progress' : 'Nothing ticked yet. Click the courses you have completed.';
+}
+function scrollToTerm(i){
+  if(i<0) return; const box=$('map-scroll');
+  const left = Math.max(0, colX(TERMS[i].col) - (box.clientWidth-CW)/2);
+  box.scrollTo({left, behavior: reduceMotion?'auto':'smooth'});
+}
+function setStep(n, opts={}){
+  mapStep=Math.max(0,Math.min(TERMS.length,n)); applyReveal();
+  if(opts.scroll!==false) scrollToTerm(mapStep-1);
+}
+function stepBy(d){ stopPlay(); setStep(mapStep+d); }
+function showAll(){ stopPlay(); setStep(TERMS.length,{scroll:false}); $('map-scroll').scrollTo({left:0}); }
+function stopPlay(){ playing=false; clearTimeout(timer); const b=$('jr-play'); b.querySelector('i').className='fa-solid fa-play'; b.querySelector('span').textContent= mapStep>=TERMS.length?'Replay journey':'Play journey'; }
+function tick(){
+  clearTimeout(timer); if(!playing) return;
+  if(mapStep>=TERMS.length){ stopPlay(); return; }
+  setStep(mapStep+1);
+  timer=setTimeout(tick, 2300/speed);
+}
+function togglePlay(){
+  if(playing){ stopPlay(); return; }
+  if(mapStep>=TERMS.length) setStep(0,{scroll:false});
+  playing=true; const b=$('jr-play'); b.querySelector('i').className='fa-solid fa-pause'; b.querySelector('span').textContent='Pause';
+  if(mapStep===0) $('map-scroll').scrollTo({left:0});
+  timer=setTimeout(tick, mapStep===0?350:100);
+}
+function applyOptions(){ applyReveal(); updateOverlay(); }
+
+function highlight(id){
+  const up=ANC[id], down=DESC[id];
+  document.querySelectorAll('.mc-card').forEach(el=>{
+    const k=el.dataset.id;
+    el.classList.toggle('sel',k===id); el.classList.toggle('up',up.has(k)); el.classList.toggle('down',down.has(k));
+    el.classList.toggle('dim', k!==id && !up.has(k) && !down.has(k));
+  });
+  document.querySelectorAll('.edge').forEach(el=>{
+    const e=EDGES[+el.dataset.i];
+    const isUp = up.has(e.from) && (e.to===id || up.has(e.to));
+    const isDown = down.has(e.to) && (e.from===id || down.has(e.from));
+    el.classList.toggle('hlUp',isUp); el.classList.toggle('hlDown',isDown); el.classList.toggle('fade',!isUp && !isDown);
+  });
+}
+function clearHighlight(){
+  document.querySelectorAll('.mc-card').forEach(el=>el.classList.remove('sel','up','down','dim'));
+  document.querySelectorAll('.edge').forEach(el=>el.classList.remove('hlUp','hlDown','fade'));
+}
+function pinCourse(id){ closeCourse(); setView('map'); pinned=id; highlight(id); toast('Tracing '+lbl(id)+'. Click the map background to clear.'); }
+
+let prevAvail=null, lastNewly=[];
+function updateOverlay(){
+  const board=$('map-board'); if(!board) return;
+  board.classList.add('overlay-on');
+  const P=computePlan(), avail=new Set(), active=hasAny();
+  document.querySelectorAll('.mc-card').forEach(el=>{
+    const c=BYID[el.dataset.id], s=state.status[c.id], icon=el.querySelector('.badge i');
+    el.classList.remove('st-done','st-prog','st-ready','st-together','st-blocked','st-next');
+    icon.className='';
+    if(s==='done'){ el.classList.add('st-done'); icon.className='fa-solid fa-check'; }
+    else if(s==='prog'){ el.classList.add('st-prog'); icon.className='fa-solid fa-hourglass-half'; }
+    else {
+      const ev=P.ev[c.id];
+      if(ev.state!=='blocked') avail.add(c.id);
+      if(!active) return;
+      if(ev.state==='blocked'){ el.classList.add('st-blocked'); icon.className='fa-solid fa-lock'; }
+      else {
+        el.classList.add(ev.state==='together'?'st-together':'st-ready');
+        if(ev.state==='together') icon.className='fa-solid fa-link';
+        if(P.next && c.term===P.next.id) el.classList.add('st-next');
+      }
+    }
+  });
+  lastNewly = prevAvail ? [...avail].filter(i=>!prevAvail.has(i)) : [];
+  prevAvail=avail;
+  lastNewly.forEach(id=>{ const el=document.querySelector('.mc-card[data-id="'+id+'"]'); if(!el) return; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),1400); });
+  renderNextStrip(P);
+  if(mapStep>=TERMS.length) refreshProgress(P);
+}
+function groupChips(list,P,cls){
+  const m=new Map();
+  list.forEach(c=>{ const k=c.type==='elec'?c.name+' ('+c.code+')':lbl(c.id); const g=m.get(k)||{ids:[],cr:0,tg:false}; g.ids.push(c.id); g.cr+=c.cr; if(P.ev[c.id].state==='together') g.tg=true; m.set(k,g); });
+  return [...m].map(([k,g])=>`<button class="opt-chip ${cls||''} ${g.tg&&!cls?'tg':''}" onclick="focusCourse('${g.ids[0]}')" title="Show on the map">${esc(k)}${g.ids.length>1?' ×'+g.ids.length:''}<small>${g.cr} cr</small></button>`).join('');
+}
+function renderNextStrip(P){
+  const el=$('next-strip'); if(!el) return;
+  let h='';
+  if(!P.next){ h='<p class="text-xs text-slate-600">You are in the last term. Check the plan below for anything still unmarked.</p>'; }
+  else {
+    const nxt=P.nextList.filter(c=>P.ev[c.id].state!=='blocked'), sum=nxt.reduce((s,c)=>s+c.cr,0);
+    const hint = !Object.values(state.status).includes('prog') ? 'Mark the courses you are taking now, or use Pre-fill, to see what opens.' : 'Nothing in that term is open yet. Check the prerequisites on the map.';
+    h+=`<div class="flex flex-wrap items-center gap-2"><span class="text-[11px] font-bold uppercase tracking-wider text-warmorange-600 whitespace-nowrap"><i class="fa-solid fa-forward mr-1"></i>Next term · ${esc(termLabel(P.next))}</span>${nxt.length?groupChips(nxt,P):'<span class="text-xs text-slate-500">'+hint+'</span>'}${nxt.length?`<span class="text-[11px] text-slate-500 whitespace-nowrap">${sum} cr ready</span>`:''}</div>`;
+  }
+  const back=P.catchUp.filter(c=>P.ev[c.id].state!=='blocked');
+  if(back.length) h+=`<div class="flex flex-wrap items-center gap-2"><span class="text-[11px] font-bold uppercase tracking-wider text-amber-700 whitespace-nowrap"><i class="fa-solid fa-clock-rotate-left mr-1"></i>Behind the standard plan</span>${groupChips(back,P,'bk')}</div>`;
+  el.innerHTML=h;
+}
+function focusCourse(id){
+  const el=document.querySelector('.mc-card[data-id="'+id+'"]'); if(!el) return;
+  if(mapStep<TERMS.length){ stopPlay(); setStep(TERMS.length,{scroll:false}); }
+  el.scrollIntoView({behavior:'smooth',block:'center',inline:'center'});
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),1400);
+}
+function cardClick(id){
+  if(mapStep<TERMS.length){ stopPlay(); setStep(TERMS.length,{scroll:false}); toast('Animation skipped. Click a course to tick it.'); return; }
+  const cur=state.status[id], nxt=cur==='done'?'none':'done';
+  let warn=''; if(!cur){ const ev=evaluate(BYID[id]); if(ev.state==='blocked') warn=' Note: '+reasons(ev)[0]+'.'; }
+  setStatus(id,nxt);
+  const n=lastNewly.filter(i=>i!==id).map(i=>lbl(i));
+  const word={done:'marked completed',prog:'marked taking now',none:'cleared'}[nxt];
+  const more = nxt==='none'||!n.length ? '' : (nxt==='done'?' Now open: ':' Open once you pass it: ')+n.slice(0,4).join(', ')+(n.length>4?' and '+(n.length-4)+' more':'')+'.';
+  toast(lbl(id)+' '+word+'.'+warn+more);
+}
+
+function toggleTakingNow(id){
+  if(mapStep<TERMS.length){ stopPlay(); setStep(TERMS.length,{scroll:false}); }
+  const cur=state.status[id], nxt=cur==='prog'?'none':'prog';
+  let warn=''; if(nxt==='prog'){ const ev=evaluate(BYID[id]); if(ev.state==='blocked') warn=' Note: '+reasons(ev)[0]+'.'; }
+  setStatus(id,nxt);
+  const n=lastNewly.filter(i=>i!==id).map(i=>lbl(i));
+  const word=nxt==='prog'?'marked taking now':'cleared';
+  const more = nxt==='none'||!n.length ? '' : ' Open once you pass it: '+n.slice(0,4).join(', ')+(n.length>4?' and '+(n.length-4)+' more':'')+'.';
+  toast(lbl(id)+' '+word+'.'+warn+more);
+}
+
+// ================= COURSE MODAL =================
+let modalId=null;
+function chipList(ids){ return ids.length ? ids.map(i=>`<button class="link-chip" onclick="openCourse('${i}')">${esc(lbl(i))}</button>`).join(' ') : '<span class="text-slate-400">None</span>'; }
+function openCourse(id){
+  const c=BYID[id], t=TERMS[c.ti]; modalId=id;
+  const unlocks = EDGES.filter(e=>e.from===id).map(e=>e.to);
+  const chain = [...ANC[id]].sort((a,b)=>BYID[a].ti-BYID[b].ti);
+  const st = state.status[id]||'none';
+  let planHtml='';
+  if(st==='none' && Object.keys(state.status).length){
+    const ev=evaluate(c); const chip = ev.state==='ready'?'<span class="chip ok"><i class="fa-solid fa-circle-check"></i> Ready for you</span>':ev.state==='together'?'<span class="chip mid">Take together</span>':'<span class="chip no"><i class="fa-solid fa-lock"></i> Not open yet</span>';
+    planHtml=`<div class="p-3 rounded-xl bg-sky-50 border border-sky-100"><div class="flex items-center gap-2 mb-1">${chip}<span class="text-[11px] text-slate-500">based on your plan</span></div>${reasons(ev).map(r=>`<div class="text-xs text-slate-700">${esc(r)}</div>`).join('')}</div>`;
+  }
+  $('course-modal-body').innerHTML = `
+    <div class="t-${c.type}"><span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded border" style="background:var(--bgc);border-color:var(--c)">${TYPE_LABELS[c.type]}</span></div>
+    <div><h3 class="font-tech text-lg font-bold text-slate-900">${esc(c.code)}${c.star?' '+c.star:''}</h3><p class="text-sm text-slate-700">${esc(c.name)}</p></div>
+    <div class="grid grid-cols-3 gap-2 p-3 bg-sky-50/80 rounded-xl border border-sky-100 text-xs text-center">
+      <div><span class="text-slate-400 text-[10px] block uppercase">Credits</span><span class="font-bold text-slate-800">${c.cr}</span></div>
+      <div><span class="text-slate-400 text-[10px] block uppercase">Standard term</span><span class="font-bold text-sky-700">${esc(termLabel(t))}</span></div>
+      <div><span class="text-slate-400 text-[10px] block uppercase">Your status</span><span class="font-bold text-warmorange-600">${st==='done'?'Completed':st==='prog'?'Taking now':'Not taken'}</span></div>
+    </div>
+    <div class="text-xs space-y-3">
+      <div><h4 class="font-bold uppercase tracking-wider text-slate-900 mb-1">Prerequisites (finish first)</h4><div class="flex flex-wrap gap-1.5">${chipList(c.pre)}</div></div>
+      <div><h4 class="font-bold uppercase tracking-wider text-slate-900 mb-1">Prerequisite / concurrent (earlier or same term)</h4><div class="flex flex-wrap gap-1.5">${chipList(c.co)}</div></div>
+      <div><h4 class="font-bold uppercase tracking-wider text-slate-900 mb-1">Unlocks</h4><div class="flex flex-wrap gap-1.5">${chipList(unlocks)}</div></div>
+      <div><h4 class="font-bold uppercase tracking-wider text-slate-900 mb-1">Full chain behind it</h4><div class="flex flex-wrap gap-1.5">${chipList(chain)}</div></div>
+    </div>
+    ${planHtml}
+    ${c.star?'<p class="text-[11px] text-slate-500">The '+c.star+' mark comes from the department chart. Ask your advisor about its condition.</p>':''}
+    <div class="pt-3 border-t border-sky-100 flex flex-wrap justify-between gap-2 items-center">
+      <button onclick="pinCourse('${id}')" class="btn-glow px-3 py-2 bg-white border border-slate-300 text-slate-700 rounded-xl text-xs font-semibold"><i class="fa-solid fa-bullseye mr-1"></i>Trace on map</button>
+      <div class="seg" role="group" aria-label="Status of ${esc(c.code)}">
+        ${['none','prog','done'].map(s=>`<button data-st="${s}" aria-pressed="${st===s}" onclick="setStatus('${id}','${s}');openCourse('${id}')">${s==='none'?'Not taken':s==='prog'?'Taking now':'Completed'}</button>`).join('')}
+      </div>
+    </div>`;
+  $('course-modal').classList.remove('hidden');
+}
+function closeCourse(){ $('course-modal').classList.add('hidden'); modalId=null; }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeCourse(); });
+
+// ================= PLANNER =================
+const LS_KEY='aus_me_advising_v1';
+function save(){ try{ sessionStorage.setItem(LS_KEY, JSON.stringify({student:state.student, notes:state.notes, termId:state.termId, status:state.status})); }catch(e){} }
+function loadSaved(){
+  try{
+    const s=JSON.parse(sessionStorage.getItem(LS_KEY)||'null');
+    if(s){ Object.assign(state.student,s.student||{}); state.notes=s.notes||''; if(s.termId && TERMS.some(t=>t.id===s.termId)) state.termId=s.termId; state.status=s.status||{}; }
+  }catch(e){}
+}
+function defaultOpen(){ const cur=termIndex(state.termId); state.open={}; TERMS.forEach(t=>{ state.open[t.id]= t.idx<=cur+1; }); }
+function hasAny(){ return Object.keys(state.status).length>0; }
+function setStatus(id,s){
+  if(s==='none') delete state.status[id]; else state.status[id]=s;
+  state.loaded=null; $('record-banner').classList.add('hidden');
+  updateRow(id); updateTermHeader(BYID[id].term);
+  renderResults(); renderStepper(); updateOverlay(); save();
+}
+function fillStudentForm(){
+  $('st-name').value=state.student.name||''; $('st-id').value=state.student.id||''; $('st-email').value=state.student.email||''; $('st-advisor').value=state.student.advisor||''; $('st-notes').value=state.notes||'';
+  $('st-term').innerHTML = TERMS.map(t=>`<option value="${t.id}" ${t.id===state.termId?'selected':''}>${esc(termLabel(t))}</option>`).join('');
+}
+function onStudentInput(){
+  state.student={name:$('st-name').value.trim(), id:$('st-id').value.trim(), email:$('st-email').value.trim(), advisor:$('st-advisor').value.trim()};
+  state.notes=$('st-notes').value; renderStepper(); updateDownloadState(); save();
+}
+function onTermChange(){ state.termId=$('st-term').value; defaultOpen(); renderCourseList(); renderResults(); renderStepper(); updateOverlay(); save(); }
+function prefill(){
+  const cur=termIndex(state.termId);
+  COURSES.forEach(c=>{ if(c.ti<cur) state.status[c.id]='done'; else if(c.ti===cur) state.status[c.id]='prog'; });
+  renderCourseList(); renderResults(); renderStepper(); updateOverlay(); save();
+  toast('Pre-filled from the standard plan. Adjust anything that differs.');
+}
+let clearArmed=false;
+function clearCourses(){
+  const b=$('clear-btn');
+  if(!clearArmed){ clearArmed=true; b.innerHTML='<i class="fa-solid fa-triangle-exclamation mr-1"></i>Click again to clear'; setTimeout(()=>{ clearArmed=false; b.innerHTML='<i class="fa-solid fa-eraser mr-1"></i>Clear courses'; },3000); return; }
+  clearArmed=false; b.innerHTML='<i class="fa-solid fa-eraser mr-1"></i>Clear courses';
+  state.status={}; renderCourseList(); renderResults(); renderStepper(); updateOverlay(); save(); toast('Courses cleared.');
+}
+let resetArmed=false;
+function resetAll(){
+  const b=$('reset-btn');
+  if(!resetArmed){ resetArmed=true; b.innerHTML='<i class="fa-solid fa-triangle-exclamation mr-1"></i>Click again to reset'; setTimeout(()=>{ resetArmed=false; b.innerHTML='<i class="fa-solid fa-rotate-left mr-1"></i>Reset all'; },3000); return; }
+  resetArmed=false; b.innerHTML='<i class="fa-solid fa-rotate-left mr-1"></i>Reset all';
+  state.student={name:'',id:'',email:'',advisor:''}; state.notes=''; state.termId='Y1F'; state.status={}; state.loaded=null;
+  $('record-banner').classList.add('hidden'); defaultOpen(); fillStudentForm(); renderAll(); toast('Everything was reset.');
+}
+function expandAll(v){ TERMS.forEach(t=>state.open[t.id]=v); renderCourseList(); }
+
+function reqLine(c){
+  const p=c.pre.map(lbl), q=c.co.map(lbl);
+  const y4 = isYear4(c) ? 'Year 4 only' : '';
+  if(!p.length && !q.length) return ['No prerequisite on the chart', y4].filter(Boolean).join(' · ');
+  return [p.length?'Needs: '+p.join(', '):'', q.length?'With or after: '+q.join(', '):'', y4].filter(Boolean).join(' · ');
+}
+function renderCourseList(){
+  $('course-list').innerHTML = TERMS.map(t=>`
+    <section class="term-sec" data-term="${t.id}">
+      <button class="term-head" data-act="toggle" aria-expanded="${!!state.open[t.id]}">
+        <span class="flex items-center gap-2"><i class="fa-solid fa-chevron-right chev"></i><span class="font-tech text-xs font-bold text-slate-900">${esc(termLabel(t))}</span><span class="text-[11px] text-slate-500">${t.cr} crs</span></span>
+        <span class="text-[11px] font-semibold text-sky-700" id="tc-${t.id}"></span>
+      </button>
+      <div class="term-body ${state.open[t.id]?'':'hidden'}">
+        <div class="flex justify-end px-3 py-1.5"><button data-act="markterm" data-term="${t.id}" class="text-[11px] font-bold text-sky-600 hover:text-warmorange-600">Mark all completed</button></div>
+        ${t.courses.map(c=>rowHTML(c)).join('')}
+      </div>
+    </section>`).join('');
+  TERMS.forEach(t=>updateTermHeader(t.id));
+}
+function rowHTML(c){
+  const st=state.status[c.id]||'none';
+  return `<div class="crs-row t-${c.type}" data-id="${c.id}" data-st="${st}">
+    <div class="min-w-0 flex-1" style="min-width:150px">
+      <div class="flex items-baseline gap-2 flex-wrap"><span class="font-mono text-xs font-bold text-slate-900">${esc(c.code)}${c.star?' '+c.star:''}</span><span class="text-[11px] text-slate-500">${c.cr} ${c.cr===1?'cr':'crs'}</span>
+        <button data-act="info" class="text-sky-500 hover:text-warmorange-600 text-xs" aria-label="Details for ${esc(c.code)}"><i class="fa-solid fa-circle-info"></i></button></div>
+      <div class="text-xs text-slate-700">${esc(c.name)}</div>
+      <div class="text-[10px] text-slate-500 mt-0.5">${esc(reqLine(c))}</div>
+    </div>
+    <div class="seg" role="group" aria-label="Status of ${esc(c.code+' '+c.name)}">
+      ${['none','prog','done'].map(s=>`<button data-act="set" data-st="${s}" aria-pressed="${st===s}">${s==='none'?'Not taken':s==='prog'?'Taking now':'Completed'}</button>`).join('')}
+    </div></div>`;
+}
+function updateRow(id){
+  const row=document.querySelector(`.crs-row[data-id="${id}"]`); if(!row) return;
+  const st=state.status[id]||'none'; row.dataset.st=st;
+  row.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.st===st)));
+}
+function updateTermHeader(tid){
+  const t=TERMS.find(x=>x.id===tid), el=$('tc-'+tid); if(!el) return;
+  const d=t.courses.filter(c=>state.status[c.id]==='done').length, p=t.courses.filter(c=>state.status[c.id]==='prog').length;
+  el.textContent = d+'/'+t.courses.length+' done'+(p?' · '+p+' now':'');
+}
+$('course-list').addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const act=b.dataset.act;
+  if(act==='toggle'){ const sec=b.closest('.term-sec'), tid=sec.dataset.term; state.open[tid]=!state.open[tid]; b.setAttribute('aria-expanded',String(state.open[tid])); sec.querySelector('.term-body').classList.toggle('hidden',!state.open[tid]); }
+  else if(act==='markterm'){ TERMS.find(t=>t.id===b.dataset.term).courses.forEach(c=>{ state.status[c.id]='done'; updateRow(c.id); }); updateTermHeader(b.dataset.term); renderResults(); renderStepper(); updateOverlay(); save(); }
+  else { const id=b.closest('.crs-row').dataset.id; if(act==='set') setStatus(id,b.dataset.st); else if(act==='info') openCourse(id); }
+});
+
+function renderStepper(){
+  const named = state.student.name && state.student.id;
+  const items=[{t:'Pick your current term',d:state.termId!=='Y1F'||hasAny(),i:'fa-user'},{t:'Click your courses on the map',d:hasAny(),i:'fa-list-check'},{t:'Review what opens next',d:hasAny()&&!!named,i:'fa-route'},{t:'Download for advisor',d:state.downloaded,i:'fa-file-arrow-down'}];
+  let cur=items.findIndex(x=>!x.d); if(cur<0) cur=3;
+  $('stepper').innerHTML = items.map((s,i)=>`<div class="step-item flex items-center gap-2.5 ${s.d?'done':''} ${i===cur&&!s.d?'cur':''}"><span class="step-dot">${s.d?'<i class="fa-solid fa-check"></i>':i+1}</span><span class="text-xs font-bold text-slate-800 leading-tight">${s.t}</span></div>`).join('');
+}
+function updateDownloadState(){
+  const ok = state.student.name && state.student.id;
+  $('dl-report').disabled=!ok; $('dl-json').disabled=!ok;
+  $('dl-hint').textContent = ok ? 'Send both files to your advisor. The record (.json) can be loaded back here by your advisor.' : 'Add your name and student ID in Step 1 to enable the downloads.';
+}
+
+// ---------- results ----------
+function statusChip(ev){
+  if(ev.state==='ready') return '<span class="chip ok"><i class="fa-solid fa-circle-check"></i> Ready</span>';
+  if(ev.state==='together') return '<span class="chip mid"><i class="fa-solid fa-link"></i> Take together</span>';
+  return '<span class="chip no"><i class="fa-solid fa-lock"></i> Not open yet</span>';
+}
+function itemHTML(c,ev,tag){
+  return `<div class="res-item flex flex-wrap items-start justify-between gap-2">
+    <div class="min-w-0"><div class="flex items-baseline gap-2 flex-wrap"><button class="font-mono text-xs font-bold text-sky-700 hover:text-warmorange-600" onclick="openCourse('${c.id}')">${esc(c.code)}${c.star?' '+c.star:''}</button><span class="text-[11px] text-slate-500">${c.cr} ${c.cr===1?'cr':'crs'}${tag?' · '+esc(tag):''}</span></div>
+    <div class="text-xs text-slate-700">${esc(c.name)}</div>
+    ${reasons(ev).map(r=>`<div class="text-[11px] text-slate-500 mt-0.5">${esc(r)}</div>`).join('')}</div>${statusChip(ev)}</div>`;
+}
+let tableFilter='all';
+function renderResults(){
+  const P=computePlan(), pct=Math.round((P.done/TOTAL_CR)*100), R=40, C=2*Math.PI*R, cur=TERMS[P.cur];
+  let h=`<div class="flex items-center gap-4">
+    <svg width="100" height="100" viewBox="0 0 100 100" aria-label="${pct} percent complete" class="flex-shrink-0"><circle cx="50" cy="50" r="${R}" fill="none" stroke="#e0f2fe" stroke-width="10"/><circle cx="50" cy="50" r="${R}" fill="none" stroke="url(#rg)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-P.done/TOTAL_CR)}" transform="rotate(-90 50 50)" style="transition:stroke-dashoffset .8s"/>
+      <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0ea5e9"/><stop offset="1" stop-color="#6366f1"/></linearGradient></defs>
+      <text x="50" y="55" text-anchor="middle" font-family="Orbitron" font-weight="800" font-size="18" fill="#0b2545">${pct}%</text></svg>
+    <div class="grid grid-cols-3 gap-2 flex-1 text-center min-w-0">
+      <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-2"><div class="stat-num text-lg font-black text-emerald-600">${P.done}</div><div class="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">Completed</div></div>
+      <div class="rounded-xl bg-orange-50 border border-orange-200 p-2"><div class="stat-num text-lg font-black text-warmorange-500">${P.prog}</div><div class="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">Taking now</div></div>
+      <div class="rounded-xl bg-sky-50 border border-sky-200 p-2"><div class="stat-num text-lg font-black text-sky-600">${P.remaining}</div><div class="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">Remaining</div></div>
+    </div></div>
+    <p class="text-[11px] text-slate-500">Current term: <b class="text-slate-700">${esc(termLabel(cur))}</b> · ${TOTAL_CR} credits to graduate</p>`;
+  if(!P.next){
+    h+=`<div><h4 class="font-bold text-xs uppercase tracking-wider text-slate-900 mb-2">Graduation check</h4>${P.open.length?`<p class="text-xs text-slate-600 mb-2">${P.open.length} course${P.open.length>1?'s':''} still not marked.</p>`:'<p class="text-xs text-emerald-700 font-semibold">Every course is marked. Ask your advisor for the final degree audit.</p>'}</div>`;
+  } else {
+    const nr = P.nextList.filter(c=>P.ev[c.id].state!=='blocked');
+    h+=`<div><h4 class="font-bold text-xs uppercase tracking-wider text-slate-900 mb-1 flex items-center gap-2"><i class="fa-solid fa-forward text-warmorange-500"></i> Next term · ${esc(termLabel(P.next))}</h4>
+      <p class="text-[11px] text-slate-500 mb-2">Assumes you pass the courses marked "Taking now". Standard load ${P.next.cr} crs · ready ${nr.reduce((s,c)=>s+c.cr,0)} crs.</p>
+      ${!Object.values(state.status).includes('prog')?'<p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 mb-2">No course is marked "Taking now" yet, so next-term results may show blocked courses.</p>':''}
+      <div class="space-y-2">${P.nextList.length?P.nextList.map(c=>itemHTML(c,P.ev[c.id])).join(''):'<p class="text-xs text-slate-500">All courses of that term are already marked.</p>'}</div></div>`;
+  }
+  const cu = P.catchUp;
+  if(cu.length) h+=`<div><h4 class="font-bold text-xs uppercase tracking-wider text-slate-900 mb-1 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-warmorange-500"></i> Behind the standard plan (${cu.length})</h4>
+    <p class="text-[11px] text-slate-500 mb-2">Scheduled up to your current term but not marked completed or taking now.</p>
+    <div class="space-y-2">${cu.map(c=>itemHTML(c,P.ev[c.id],c.ti===P.cur?'this term':termLabel(TERMS[c.ti]))).join('')}</div></div>`;
+  if(P.ahead.length) h+=`<details class="rounded-xl bg-white/60 border border-sky-100 p-3"><summary class="cursor-pointer text-xs font-bold text-slate-900">Also open to you from later terms (${P.ahead.length})</summary>
+    <div class="flex flex-wrap gap-1.5 mt-2">${P.ahead.map(c=>`<button class="link-chip" onclick="openCourse('${c.id}')" title="${esc(termLabel(TERMS[c.ti]))}">${esc(lbl(c.id))}</button>`).join('')}</div></details>`;
+  if(P.flags.length) h+=`<div class="rounded-xl bg-amber-50 border border-amber-200 p-3"><h4 class="font-bold text-xs uppercase tracking-wider text-amber-800 mb-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Check with your advisor (${P.flags.length})</h4><ul class="list-disc pl-4 text-[11px] text-amber-900 space-y-0.5">${P.flags.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></div>`;
+  const rows=P.open.filter(c=>tableFilter==='all'||(tableFilter==='ready'?P.ev[c.id].state!=='blocked':P.ev[c.id].state==='blocked'));
+  h+=`<details class="rounded-xl bg-white/60 border border-sky-100 p-3"><summary class="cursor-pointer text-xs font-bold text-slate-900">Prerequisite check for every unmarked course (${P.open.length})</summary>
+    <div class="mt-2 mb-2"><select id="tbl-filter" onchange="tableFilter=this.value;renderResults();document.querySelector('#results details:last-of-type').open=true" class="px-2 py-1 bg-white border border-sky-200 rounded-lg text-[11px]" aria-label="Filter courses"><option value="all" ${tableFilter==='all'?'selected':''}>All</option><option value="ready" ${tableFilter==='ready'?'selected':''}>Ready or take together</option><option value="blocked" ${tableFilter==='blocked'?'selected':''}>Not open yet</option></select></div>
+    <div class="overflow-x-auto"><table class="tbl"><thead><tr><th>Course</th><th>Term</th><th>Status</th><th>Why</th></tr></thead><tbody>
+    ${rows.map(c=>`<tr><td class="font-mono font-bold whitespace-nowrap"><button onclick="openCourse('${c.id}')" class="text-sky-700 hover:text-warmorange-600">${esc(lbl(c.id))}</button></td><td class="whitespace-nowrap">${esc(termLabel(TERMS[c.ti]))}</td><td>${statusChip(P.ev[c.id])}</td><td>${esc(reasons(P.ev[c.id]).join('. ')||'All requirements met')}</td></tr>`).join('')}
+    </tbody></table></div></details>`;
+  $('results').innerHTML=h;
+}
+function renderAll(){ renderStepper(); renderCourseList(); renderResults(); updateDownloadState(); updateOverlay(); }
+
+// ================= RECORD / REPORT =================
+const det = (c,P) => ({id:c.id,code:c.code,name:c.name,credits:c.cr,term:termLabel(TERMS[c.ti])});
+async function buildRecord(){
+  const P=computePlan(), list=(arr)=>arr.map(c=>({...det(c),status:P.ev[c.id].state,notes:reasons(P.ev[c.id])}));
+  return {
+    schema:'aus-me-advising-record', version:1, generated:new Date().toISOString(),
+    student:{...state.student}, notes:state.notes,
+    standing:{termId:state.termId, term:termLabel(TERMS[P.cur]), nextTerm:P.next?termLabel(P.next):null},
+    courses:{ completed:COURSES.filter(c=>state.status[c.id]==='done').map(c=>c.id), inProgress:COURSES.filter(c=>state.status[c.id]==='prog').map(c=>c.id) },
+    summary:{ creditsCompleted:P.done, creditsInProgress:P.prog, creditsRemaining:P.remaining, creditsRequired:TOTAL_CR },
+    plan:{ nextTerm:list(P.nextList), behindPlan:list(P.catchUp), flags:P.flags },
+  };
+}
+function saveFile(name,mime,text){
+  const url=URL.createObjectURL(new Blob([text],{type:mime})); const a=document.createElement('a');
+  a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+const safeName = () => (state.student.id||'student').replace(/[^\w-]+/g,'_');
+const dateTag = () => new Date().toISOString().slice(0,10);
+async function downloadRecord(){
+  if(!(state.student.name&&state.student.id)){ setView('planner'); toast('Add your name and student ID first.'); return; }
+  const rec=await buildRecord(); saveFile(`ME_Advising_${safeName()}_${dateTag()}.json`,'application/json',JSON.stringify(rec,null,2));
+  state.downloaded=true; renderStepper(); toast('Record downloaded.');
+}
+async function downloadReport(){
+  if(!(state.student.name&&state.student.id)){ toast('Add your name and student ID first.'); return; }
+  const rec=await buildRecord(); saveFile(`ME_Advising_Report_${safeName()}_${dateTag()}.html`,'text/html',reportHTML(rec));
+  state.downloaded=true; renderStepper(); toast('Advisor report downloaded.');
+}
+function reportHTML(r){
+  const s=r.student, rows=(ids)=>ids.map(id=>BYID[id]).map(c=>`<tr><td>${esc(c.code)}</td><td>${esc(c.name)}</td><td>${esc(termLabel(TERMS[c.ti]))}</td><td class="n">${c.cr}</td></tr>`).join('')||'<tr><td colspan="4" class="mute">None</td></tr>';
+  const plan=(arr)=>arr.map(c=>`<tr><td>${esc(c.code)}</td><td>${esc(c.name)}</td><td class="n">${c.credits}</td><td>${c.status==='ready'?'Ready':c.status==='together'?'Take together':'Not open yet'}</td><td>${esc(c.notes.join('. '))}</td></tr>`).join('')||'<tr><td colspan="5" class="mute">None</td></tr>';
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Advising Record - ${esc(s.name)}</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;color:#0b2545;max-width:900px;margin:24px auto;padding:0 16px;font-size:13px}
+h1{font-size:20px;margin:0}h2{font-size:14px;margin:22px 0 6px;border-bottom:2px solid #0ea5e9;padding-bottom:3px;text-transform:uppercase;letter-spacing:.05em}
+.top{border-bottom:4px solid #f97316;padding-bottom:10px;margin-bottom:12px}.sub{color:#ea580c;font-weight:700;font-size:12px;text-transform:uppercase}
+table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #d6e6f2;padding:5px 6px;text-align:left;vertical-align:top}th{background:#e0f2fe;font-size:11px;text-transform:uppercase}
+.n{text-align:right;white-space:nowrap}.mute{color:#64748b}.grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px}.k{color:#64748b}
+.box{border:1px solid #94a3b8;border-radius:6px;padding:12px;margin-top:6px}.line{border-bottom:1px solid #0b2545;height:26px;margin-top:6px}
+button{padding:8px 14px;border:0;border-radius:6px;background:#0ea5e9;color:#fff;font-weight:700;cursor:pointer}
+@media print{button{display:none}body{margin:0}}</style></head><body>
+<div class="top"><div class="sub">AUS - College of Engineering · Department of Mechanical Engineering</div><h1>Course Advising Record</h1><div class="mute">Generated ${esc(new Date(r.generated).toLocaleString())}</div></div>
+<button onclick="window.print()">Print / Save as PDF</button>
+<h2>Student</h2><div class="grid"><div><span class="k">Name:</span> ${esc(s.name)}</div><div><span class="k">Student ID:</span> ${esc(s.id)}</div><div><span class="k">Email:</span> ${esc(s.email||'-')}</div><div><span class="k">Advisor:</span> ${esc(s.advisor||'-')}</div><div><span class="k">Current term:</span> ${esc(r.standing.term)}</div><div><span class="k">Planning for:</span> ${esc(r.standing.nextTerm||'Graduation check')}</div></div>
+<h2>Credit progress</h2><div class="grid"><div><span class="k">Completed:</span> <b>${r.summary.creditsCompleted}</b></div><div><span class="k">Taking now:</span> <b>${r.summary.creditsInProgress}</b></div><div><span class="k">Remaining:</span> <b>${r.summary.creditsRemaining}</b></div><div><span class="k">Required:</span> <b>${r.summary.creditsRequired}</b></div></div>
+<h2>Completed courses</h2><table><tr><th>Course</th><th>Title</th><th>Standard term</th><th class="n">Cr</th></tr>${rows(r.courses.completed)}</table>
+<h2>In progress</h2><table><tr><th>Course</th><th>Title</th><th>Standard term</th><th class="n">Cr</th></tr>${rows(r.courses.inProgress)}</table>
+<h2>Next term: ${esc(r.standing.nextTerm||'-')}</h2><table><tr><th>Course</th><th>Title</th><th class="n">Cr</th><th>Status</th><th>Details</th></tr>${plan(r.plan.nextTerm)}</table>
+<h2>Behind the standard plan</h2><table><tr><th>Course</th><th>Title</th><th class="n">Cr</th><th>Status</th><th>Details</th></tr>${plan(r.plan.behindPlan)}</table>
+<h2>Items to check</h2>${r.plan.flags.length?'<ul>'+r.plan.flags.map(f=>`<li>${esc(f)}</li>`).join('')+'</ul>':'<div class="mute">No inconsistencies found.</div>'}
+<h2>Student notes</h2><div class="box">${esc(r.notes||'None').replace(/\n/g,'<br>')}</div>
+<h2>Advisor confirmation</h2><div class="box"><div>&#9744; Record confirmed &nbsp;&nbsp; &#9744; Changes needed</div><div class="line"></div><div class="mute">Comments</div><div class="line"></div><div class="mute">Advisor name / signature / date</div></div>
+<p class="mute">Prepared from the department course flowchart. The official degree audit takes precedence.</p></body></html>`;
+}
+async function importRecord(ev){
+  const f=ev.target.files[0]; ev.target.value=''; if(!f) return;
+  try{
+    const r=JSON.parse(await f.text());
+    if(r.schema!=='aus-me-advising-record') throw new Error('schema');
+    state.student={name:'',id:'',email:'',advisor:'',...(r.student||{})}; state.notes=r.notes||''; state.termId=TERMS.some(t=>t.id===r.standing?.termId)?r.standing.termId:'Y1F';
+    state.status={}; (r.courses?.completed||[]).forEach(id=>{ if(BYID[id]) state.status[id]='done'; }); (r.courses?.inProgress||[]).forEach(id=>{ if(BYID[id]) state.status[id]='prog'; });
+    defaultOpen(); fillStudentForm(); setView('planner'); renderAll(); save();
+    const b=$('record-banner'); b.classList.remove('hidden');
+    b.innerHTML=`<div class="glass rounded-2xl p-4 flex flex-wrap items-center gap-3 text-xs"><span class="chip info"><i class="fa-solid fa-folder-open"></i> Record loaded</span><span class="text-slate-700"><b>${esc(state.student.name)}</b> · ${esc(state.student.id)} · saved ${esc(new Date(r.generated).toLocaleDateString())}</span><span class="text-slate-500">Check these marks against the student's official record.</span></div>`;
+    toast('Record loaded.');
+  }catch(e){ toast('That file is not an advising record.'); }
+}
+
+// ================= ASSISTANT =================
+function toggleFloatingChat(){ $('floating-chat-window').classList.toggle('hidden'); $('chat-icon-open').classList.toggle('hidden'); $('chat-icon-close').classList.toggle('hidden'); }
+function botReply(q){
+  const m=q.toUpperCase().match(/\b(MCE|MTH|PHY|CHM|NGN|WRI|ENG|IEN)\s?-?(\d{3}L?)\b/);
+  if(m){
+    const c=BYID[m[1]+m[2]];
+    if(!c) return 'I could not find '+m[1]+' '+m[2]+' on the chart.';
+    const un=EDGES.filter(e=>e.from===c.id).map(e=>lbl(e.to));
+    return `<b>${esc(c.code)}</b> ${esc(c.name)} (${c.cr} cr), standard term ${esc(termLabel(TERMS[c.ti]))}.<br>Needs first: ${esc(c.pre.map(lbl).join(', ')||'nothing on the chart')}.<br>With or after: ${esc(c.co.map(lbl).join(', ')||'nothing')}.<br>Unlocks: ${esc(un.join(', ')||'nothing')}.`;
+  }
+  if(/next|take|eligible|ready|register/i.test(q)){
+    if(!hasAny()) return 'Click the courses you have finished on the map first, and the ones you are taking now. Then I can list what you can take next.';
+    const P=computePlan(); const rd=[...P.nextList,...P.catchUp].filter((c,i,a)=>a.indexOf(c)===i&&P.ev[c.id].state!=='blocked').map(c=>lbl(c.id));
+    return rd.length?'Ready or take-together courses: '+esc(rd.join(', '))+'.':'Nothing from your next term is open yet. Check that your "Taking now" courses are marked.';
+  }
+  if(/download|advisor|record|report/i.test(q)) return 'In the Download section below the map you can download an advisor report (.html, printable) and a record (.json). Your advisor can load the .json to see your courses.';
+  if(/credit|graduat|130/i.test(q)) return 'The plan totals '+TOTAL_CR+' credits: '+TERMS.filter(t=>t.id!=='SUM').map(t=>t.cr).join(', ')+' by semester, plus a 0-credit summer training (MCE 397).';
+  return 'Try a course such as "MCE 344", or ask "What can I take next?" or "How do I download my record?"';
+}
+function handleChat(e){
+  e.preventDefault(); const input=$('widget-chat-input'), q=input.value.trim(); if(!q) return;
+  const win=$('widget-chat-messages'); const u=document.createElement('div'); u.className='text-right msg-in';
+  u.innerHTML=`<span class="inline-block bg-gradient-to-r from-sky-500 to-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs">${esc(q)}</span>`;
+  win.appendChild(u); input.value=''; win.scrollTop=win.scrollHeight;
+  setTimeout(()=>{ const b=document.createElement('div'); b.className='msg-in bg-white border border-sky-100 rounded-xl p-3 text-slate-800 text-xs shadow-sm'; b.innerHTML=botReply(q); win.appendChild(b); win.scrollTop=win.scrollHeight; },300);
+}
+
+// ================= VIEWS / FX =================
+function toggleDataMenu(){ $('data-menu').classList.toggle('hidden'); }
+function setView(v){
+  const t = v==='download' ? $('step4') : v==='planner' ? $('my-plan') : $('map-top');
+  if(t) t.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function animateCount(el,target){
+  const start=parseInt(el.innerText)||0; if(start===target){ el.innerText=target; return; }
+  const dur=800,t0=performance.now();
+  (function step(t){ const p=Math.max(0,Math.min((t-t0)/dur,1)), e=1-Math.pow(1-p,3); el.innerText=Math.round(start+(target-start)*e); if(p<1) requestAnimationFrame(step); })(t0);
+}
+function startTyping(){
+  const phrases=['Plan your path from Year 1 to graduation.','Click the courses you have taken.','See what opens up next, right on the map.','Download your record for your advisor.'];
+  const el=$('typed-text'); let pi=0,ci=0,del=false;
+  if(reduceMotion){ el.textContent=phrases[0]; return; }
+  (function tick(){ const w=phrases[pi]; el.textContent=w.substring(0,ci);
+    if(!del&&ci<w.length){ci++;setTimeout(tick,45);} else if(!del){del=true;setTimeout(tick,1800);} else if(ci>0){ci--;setTimeout(tick,22);} else{del=false;pi=(pi+1)%phrases.length;setTimeout(tick,350);} })();
+}
+function initParticles(){
+  if(reduceMotion) return;
+  const canvas=$('bg-canvas'), ctx=canvas.getContext('2d'); let w,h,ps=[]; const mouse={x:-999,y:-999}; const colors=['14,165,233','99,102,241','56,189,248'];
+  function resize(){ w=canvas.width=innerWidth; h=canvas.height=innerHeight; const n=Math.min(110,Math.floor(w*h/16000)); ps=Array.from({length:n},()=>({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.5,vy:(Math.random()-.5)*.5,r:Math.random()*2+1,c:colors[Math.floor(Math.random()*3)]})); }
+  addEventListener('resize',resize); addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;}); resize();
+  (function draw(){ ctx.clearRect(0,0,w,h);
+    for(let i=0;i<ps.length;i++){ const p=ps[i]; p.x+=p.vx; p.y+=p.vy; if(p.x<0||p.x>w)p.vx*=-1; if(p.y<0||p.y>h)p.vy*=-1;
+      const dxm=p.x-mouse.x,dym=p.y-mouse.y,dm=Math.hypot(dxm,dym); if(dm<130){p.x+=dxm/dm*1.3;p.y+=dym/dm*1.3;}
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=`rgba(${p.c},0.75)`; ctx.shadowColor=`rgba(${p.c},0.9)`; ctx.shadowBlur=10; ctx.fill(); ctx.shadowBlur=0;
+      for(let j=i+1;j<ps.length;j++){ const q=ps[j],d=Math.hypot(p.x-q.x,p.y-q.y); if(d<140){ ctx.strokeStyle=`rgba(14,165,233,${(1-d/140)*0.28})`; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y); ctx.stroke(); } }
+      if(dm<170){ ctx.strokeStyle=`rgba(249,115,22,${(1-dm/170)*0.45})`; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(mouse.x,mouse.y); ctx.stroke(); } }
+    requestAnimationFrame(draw); })();
+}
+
+// ================= INIT =================
+window.addEventListener('load',()=>{
+  loadSaved(); defaultOpen();
+  const steps=['Step 1 · Pick your current term','Step 2 · Click the courses you have completed','Step 3 · See what opens next on the map','Step 4 · Download your record','Step 5 · Meet your advisor to confirm'];
+  const items=steps.map(s=>`<span><i class="fa-solid fa-bolt text-warmorange-500 mr-2"></i>${s}</span>`).join(''); $('ticker-track').innerHTML=items+items;
+  animateCount($('stat-credits'),TOTAL_CR); animateCount($('stat-courses'),COURSES.length); animateCount($('stat-links'),EDGES.length);
+  buildMap(); fillStudentForm(); renderAll(); startTyping(); initParticles();
+  if(hasAny()){ setStep(TERMS.length,{scroll:false}); }
+  else { setStep(0,{scroll:false}); setTimeout(()=>{ if(mapStep===0) togglePlay(); },900); }
+});
+</script>
+</body></html>
