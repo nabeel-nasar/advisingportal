@@ -116,6 +116,11 @@
     ::-webkit-scrollbar-track { background:rgba(186,230,253,0.4); }
     ::-webkit-scrollbar-thumb { background:linear-gradient(#38bdf8,#6366f1); border-radius:8px; }
 
+    .warn-banner { background:linear-gradient(90deg,#fef3c7,#ffedd5); border:1.5px solid #f59e0b; box-shadow:0 6px 20px rgba(245,158,11,.25); position:relative; overflow:hidden; }
+    .warn-banner::after { content:''; position:absolute; top:0; left:-60%; width:40%; height:100%; background:linear-gradient(120deg,transparent,rgba(255,255,255,.65),transparent); transform:skewX(-20deg); animation:warnSweep 5s ease-in-out infinite; }
+    @keyframes warnSweep { 0%,70%{left:-60%} 100%{left:130%} }
+    .warn-icon { width:34px; height:34px; border-radius:50%; background:#f59e0b; color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; animation:corePulse 2s ease-in-out infinite; }
+
     /* ---------- Course types ---------- */
     .t-mce   { --c:#3b82f6; --bgc:#dbeafe; }
     .t-math  { --c:#eab308; --bgc:#fef9c3; }
@@ -227,7 +232,7 @@
         <div class="flex flex-col space-y-0.5 items-start text-left">
           <span class="text-xs sm:text-sm font-black uppercase tracking-widest text-indigo-950 block leading-none">AUS - College of Engineering</span>
           <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-warmorange-600 block leading-tight">Department of Mechanical Engineering</span>
-          <h1 class="font-tech text-sm sm:text-lg font-bold gradient-text tracking-wide leading-none mt-1">Pre Advising Check Portal</h1>
+          <h1 class="font-tech text-sm sm:text-lg font-bold gradient-text tracking-wide leading-none mt-1">Pre Advising Portal</h1>
         </div>
       </div>
 
@@ -290,13 +295,17 @@
 
     <div class="flex justify-center mb-6">
       <div class="glass inline-flex p-1.5 rounded-2xl gap-1" role="tablist">
-        <button id="tab-map" role="tab" onclick="setView('map')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 tab-active"><i class="fa-solid fa-diagram-project"></i> Curriculum Map . Check with your advisor for approval before registration.</button>
+        <button id="tab-map" role="tab" onclick="setView('map')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 tab-active"><i class="fa-solid fa-diagram-project"></i> Curriculum Map</button>
         <button id="tab-planner" role="tab" onclick="setView('planner')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 tab-idle"><i class="fa-solid fa-clipboard-check"></i> My Advising Plan</button>
       </div>
     </div>
 
     <!-- ============ MAP VIEW ============ -->
     <div id="view-map">
+      <div role="alert" class="warn-banner rounded-2xl px-4 py-3 mb-3 flex items-center gap-3">
+        <span class="warn-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <span class="text-sm font-bold text-amber-900">Check with your advisor for approval before registration</span>
+      </div>
       <div class="glass rounded-2xl p-3.5 mb-3 flex flex-wrap items-center gap-3">
         <div class="flex items-center gap-1.5">
           <button id="jr-play" onclick="togglePlay()" class="btn-glow px-3.5 py-2 bg-gradient-to-r from-sky-500 to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md"><i class="fa-solid fa-play"></i><span>Play journey</span></button>
@@ -536,6 +545,7 @@ const termLabel = t => t.sem==='Summer' ? 'Summer (after Year 3)' : 'Year '+t.ye
 // ---------- planning logic ----------
 const state = { student:{name:'',id:'',email:'',advisor:''}, notes:'', termId:'Y1F', status:{}, open:{}, downloaded:false, loaded:null };
 
+const isYear4 = c => c.ti >= termIndex('Y4F');
 function evaluate(c){
   const st = id => state.status[id];
   const satisfied = id => st(id)==='done' || st(id)==='prog';
@@ -543,12 +553,14 @@ function evaluate(c){
   const pendingPre = c.pre.filter(p=>st(p)==='prog');
   const coNeeded = c.co.filter(q=>!satisfied(q));
   const coBlocked = coNeeded.filter(q=>BYID[q].pre.some(p=>!satisfied(p)));
+  const lock = isYear4(c) && termIndex(state.termId) < termIndex('SUM');
   let s = 'ready';
-  if(missingPre.length || coBlocked.length) s='blocked'; else if(coNeeded.length) s='together';
-  return {state:s, missingPre, pendingPre, coNeeded, coBlocked};
+  if(lock || missingPre.length || coBlocked.length) s='blocked'; else if(coNeeded.length) s='together';
+  return {state:s, lock, missingPre, pendingPre, coNeeded, coBlocked};
 }
 function reasons(ev){
   const out=[];
+  if(ev.lock) out.push('Year 4 course: can only be taken in Year 4');
   if(ev.missingPre.length) out.push('Finish first: '+ev.missingPre.map(lbl).join(', '));
   if(ev.coBlocked.length) out.push('Needs '+ev.coBlocked.map(lbl).join(', ')+' at the same time, and that course is not open yet');
   else if(ev.coNeeded.length) out.push('Take together with: '+ev.coNeeded.map(lbl).join(', '));
@@ -573,6 +585,7 @@ function computePlan(){
     const badCo = c.co.filter(q=>!state.status[q]);
     if(badCo.length) flags.push(lbl(c.id)+' is normally taken with or after '+badCo.map(lbl).join(', ')+', which '+(badCo.length>1?'are':'is')+' not marked.');
   });
+  COURSES.forEach(c=>{ if(state.status[c.id] && isYear4(c) && cur<termIndex('Y4F')) flags.push(lbl(c.id)+' is a Year 4 course and can only be taken in Year 4.'); });
   if(cur>=termIndex('Y4F') && !state.status.MCE397) flags.push('MCE 397 (0-credit summer professional training) is not marked yet.');
   return {cur, next, done, prog, remaining: TOTAL_CR-done-prog, open, ev, nextList, catchUp, ahead, flags};
 }
@@ -824,8 +837,9 @@ function expandAll(v){ TERMS.forEach(t=>state.open[t.id]=v); renderCourseList();
 
 function reqLine(c){
   const p=c.pre.map(lbl), q=c.co.map(lbl);
-  if(!p.length && !q.length) return 'No prerequisite on the chart';
-  return [p.length?'Needs: '+p.join(', '):'', q.length?'With or after: '+q.join(', '):''].filter(Boolean).join(' · ');
+  const y4 = isYear4(c) ? 'Year 4 only' : '';
+  if(!p.length && !q.length) return ['No prerequisite on the chart', y4].filter(Boolean).join(' · ');
+  return [p.length?'Needs: '+p.join(', '):'', q.length?'With or after: '+q.join(', '):'', y4].filter(Boolean).join(' · ');
 }
 function renderCourseList(){
   $('course-list').innerHTML = TERMS.map(t=>`
