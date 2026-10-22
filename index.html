@@ -155,7 +155,7 @@
     .mc-card { position:absolute; width:176px; height:82px; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:6px 10px;
       border:2px solid var(--c); background:var(--bgc); color:#0b2545; border-radius:14px; cursor:pointer; transition:opacity .6s, transform .6s cubic-bezier(.2,.9,.3,1.2), box-shadow .25s, filter .4s; }
     .mc-card:hover, .mc-card.sel { box-shadow:0 10px 28px rgba(14,165,233,.4); transform:translateY(-2px); }
-    .mc-card.ghost { opacity:.1; transform:translateX(-26px) scale(.92); filter:grayscale(1); pointer-events:none; }
+    \1 }
     .mc-card.dim { opacity:.3; }
     .mc-card.up { box-shadow:0 0 0 3px rgba(37,99,235,.55); }
     .mc-card.down { box-shadow:0 0 0 3px rgba(249,115,22,.65); }
@@ -183,6 +183,10 @@
     .mc-card { user-select:none; -webkit-user-select:none; }
     .mc-card .info { position:absolute; top:3px; left:6px; font-size:12px; line-height:1; padding:2px; color:#0284c7; opacity:.55; cursor:pointer; z-index:3; }
     .mc-card .info:hover, .mc-card .info:focus-visible { opacity:1; color:#f97316; }
+    .mc-card .badge { width:24px; height:24px; top:-9px; right:-9px; background:#fff; border:2px solid #94a3b8; font-size:12px; }
+    .overlay-on .st-done .badge, .overlay-on .st-prog .badge, .overlay-on .st-blocked .badge, .overlay-on .st-together .badge { border-color:transparent; }
+    .overlay-on .st-ready .badge { border-color:#0ea5e9; }
+    .mc-card:hover .badge:empty, .mc-card:hover .badge { border-color:#0ea5e9; }
     .overlay-on .st-together .badge { background:#6366f1; }
     .overlay-on .st-ready { box-shadow:0 0 0 2px rgba(14,165,233,.5); }
     .overlay-on .st-together { box-shadow:0 0 0 2px rgba(99,102,241,.5); }
@@ -353,7 +357,7 @@
           </div>
           <button onclick="prefill()" class="btn-glow px-3 py-2.5 bg-gradient-to-r from-sky-500 to-indigo-500 text-white rounded-xl text-xs font-bold"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Pre-fill from the standard plan</button>
           <button id="clear-btn" onclick="clearCourses()" class="btn-glow px-3 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-xs font-semibold"><i class="fa-solid fa-eraser mr-1"></i>Clear courses</button>
-          <p class="text-[11px] text-slate-500 flex-1 min-w-[220px] leading-relaxed">Click a course on the map to mark it <b>Completed</b>. Click again for <b>Taking now</b>, a third time to clear. The courses that open up are highlighted and listed here.</p>
+          <p class="text-[11px] text-slate-500 flex-1 min-w-[220px] leading-relaxed">Every course starts unticked. Click a course to tick it as <b>Completed</b>, click again for <b>Taking now</b>, a third time to clear. The courses that open up are highlighted and listed here.</p>
         </div>
         <div id="next-strip" class="mt-3 pt-3 border-t border-sky-100 space-y-2" aria-live="polite"></div>
       </div>
@@ -371,10 +375,11 @@
       </div>
       <div class="glass rounded-xl p-3.5 mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-slate-700">
         <span class="font-bold uppercase tracking-wider text-slate-500">Your status</span>
+        <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#fff;border:2px solid #94a3b8"></i>Not ticked yet</span>
         <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#10b981"><i class="fa-solid fa-check"></i></i>Completed</span>
         <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#f97316"><i class="fa-solid fa-hourglass-half"></i></i>Taking now</span>
-        <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#0ea5e9"><i class="fa-solid fa-unlock"></i></i>Available now</span>
-        <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#6366f1"><i class="fa-solid fa-link"></i></i>Take together with another course</span>
+        <span class="flex items-center gap-1.5"><i class="lg-ring" style="border-color:#0ea5e9;box-shadow:0 0 6px rgba(14,165,233,.5)"></i>Available now</span>
+        <span class="flex items-center gap-1.5"><i class="lg-ring" style="border-color:#6366f1;box-shadow:0 0 6px rgba(99,102,241,.5)"></i>Take together with another course</span>
         <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#94a3b8"><i class="fa-solid fa-lock"></i></i>Locked until prerequisites are done</span>
         <span class="flex items-center gap-1.5"><i class="lg-ring"></i>Suggested for next term</span>
       </div>
@@ -717,7 +722,7 @@ function refreshProgress(P){
   P=P||computePlan();
   animateCount($('jr-credits'), P.done);
   $('jr-bar').style.width=(P.done/TOTAL_CR*100)+'%';
-  $('jr-label').textContent = (P.done||P.prog) ? 'Your progress · '+P.done+' completed, '+P.prog+' in progress' : 'Click the courses you have taken to see what opens next';
+  $('jr-label').textContent = (P.done||P.prog) ? 'Your progress · '+P.done+' completed, '+P.prog+' in progress' : 'Nothing ticked yet. Click the courses you have completed.';
 }
 function scrollToTerm(i){
   if(i<0) return; const box=$('map-scroll');
@@ -770,19 +775,21 @@ let prevAvail=null, lastNewly=[];
 function updateOverlay(){
   const board=$('map-board'); if(!board) return;
   board.classList.add('overlay-on');
-  const P=computePlan(), avail=new Set();
+  const P=computePlan(), avail=new Set(), active=hasAny();
   document.querySelectorAll('.mc-card').forEach(el=>{
     const c=BYID[el.dataset.id], s=state.status[c.id], icon=el.querySelector('.badge i');
     el.classList.remove('st-done','st-prog','st-ready','st-together','st-blocked','st-next');
+    icon.className='';
     if(s==='done'){ el.classList.add('st-done'); icon.className='fa-solid fa-check'; }
     else if(s==='prog'){ el.classList.add('st-prog'); icon.className='fa-solid fa-hourglass-half'; }
     else {
       const ev=P.ev[c.id];
+      if(ev.state!=='blocked') avail.add(c.id);
+      if(!active) return;
       if(ev.state==='blocked'){ el.classList.add('st-blocked'); icon.className='fa-solid fa-lock'; }
       else {
-        avail.add(c.id);
         el.classList.add(ev.state==='together'?'st-together':'st-ready');
-        icon.className = ev.state==='together' ? 'fa-solid fa-link' : 'fa-solid fa-unlock';
+        if(ev.state==='together') icon.className='fa-solid fa-link';
         if(P.next && c.term===P.next.id) el.classList.add('st-next');
       }
     }
@@ -818,7 +825,7 @@ function focusCourse(id){
   el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),1400);
 }
 function cardClick(id){
-  if(mapStep<TERMS.length){ stopPlay(); setStep(TERMS.length,{scroll:false}); }
+  if(mapStep<TERMS.length){ stopPlay(); setStep(TERMS.length,{scroll:false}); toast('Animation skipped. Click a course to tick it.'); return; }
   const cur=state.status[id], nxt=!cur?'done':(cur==='done'?'prog':'none');
   let warn=''; if(!cur){ const ev=evaluate(BYID[id]); if(ev.state==='blocked') warn=' Note: '+reasons(ev)[0]+'.'; }
   setStatus(id,nxt);
@@ -870,10 +877,10 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeCourse(); });
 
 // ================= PLANNER =================
 const LS_KEY='aus_me_advising_v1';
-function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({student:state.student, notes:state.notes, termId:state.termId, status:state.status})); }catch(e){} }
+function save(){ try{ sessionStorage.setItem(LS_KEY, JSON.stringify({student:state.student, notes:state.notes, termId:state.termId, status:state.status})); }catch(e){} }
 function loadSaved(){
   try{
-    const s=JSON.parse(localStorage.getItem(LS_KEY)||'null');
+    const s=JSON.parse(sessionStorage.getItem(LS_KEY)||'null');
     if(s){ Object.assign(state.student,s.student||{}); state.notes=s.notes||''; if(s.termId && TERMS.some(t=>t.id===s.termId)) state.termId=s.termId; state.status=s.status||{}; }
   }catch(e){}
 }
