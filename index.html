@@ -112,6 +112,16 @@
     @keyframes msgIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
     .live-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#ef4444; animation:livePulse 1.4s infinite; }
     @keyframes livePulse { 0%{box-shadow:0 0 0 0 rgba(239,68,68,.7)} 70%{box-shadow:0 0 0 8px rgba(239,68,68,0)} 100%{box-shadow:0 0 0 0 rgba(239,68,68,0)} }
+    /* Next-term plan (fuchsia, distinct from Taking now orange) */
+    .mc-card .btn-plan { position:absolute; top:-8px; right:44px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; color:#a21caf; background:#fff; border:2px solid #d946ef; box-shadow:0 2px 6px rgba(0,0,0,.2); transition:all .2s ease; z-index:4; }
+    .mc-card .btn-plan:hover { transform:scale(1.2); background:#fdf4ff; }
+    .mc-card.st-next .btn-plan { background:#d946ef; color:#fff; border-color:#a21caf; box-shadow:0 0 10px rgba(217,70,239,.6); }
+    .mc-card.st-done .btn-plan, .mc-card.st-prog .btn-plan { display:none; }
+    .opt-chip.pl { background:#fdf4ff; color:#a21caf; border-color:#f0abfc; padding-right:4px; gap:2px; align-items:center; }
+    .opt-chip.pl > button:first-child { display:inline-flex; align-items:baseline; gap:6px; font:inherit; color:inherit; }
+    .opt-chip.pl.warn { border-style:dashed; border-color:#f59e0b; }
+    .opt-chip .chip-x { width:18px; height:18px; border-radius:50%; font-size:14px; line-height:1; font-weight:800; color:#a21caf; }
+    .opt-chip .chip-x:hover { background:#d946ef; color:#fff; }
     ::-webkit-scrollbar { width:8px; height:8px; }
     ::-webkit-scrollbar-track { background:rgba(186,230,253,0.4); }
     ::-webkit-scrollbar-thumb { background:linear-gradient(#38bdf8,#6366f1); border-radius:8px; }
@@ -196,8 +206,8 @@
     .overlay-on .st-ready { box-shadow:0 0 0 2px rgba(14,165,233,.5); }
     .overlay-on .st-together { box-shadow:0 0 0 2px rgba(99,102,241,.5); }
     .overlay-on .st-prog { background:#fff7ed; border-color:#f97316; border-style:dashed; }
-    .overlay-on .st-next { border-color:#f97316; animation:nextGlow 2.2s ease-in-out infinite; }
-    @keyframes nextGlow { 0%,100%{box-shadow:0 0 0 2px rgba(249,115,22,.55),0 0 0 0 rgba(249,115,22,0)} 50%{box-shadow:0 0 0 3px rgba(249,115,22,.85),0 0 18px rgba(249,115,22,.55)} }
+    .overlay-on .st-next { border-color:#d946ef; animation:nextGlow 2.2s ease-in-out infinite; }
+    @keyframes nextGlow { 0%,100%{box-shadow:0 0 0 2px rgba(217,70,239,.55),0 0 0 0 rgba(217,70,239,0)} 50%{box-shadow:0 0 0 3px rgba(217,70,239,.85),0 0 18px rgba(217,70,239,.55)} }
     .mc-card.pop { animation:cardPop .9s cubic-bezier(.2,.9,.3,1.4); }
     @keyframes cardPop { 0%{transform:scale(1)} 35%{transform:scale(1.12); box-shadow:0 0 28px rgba(14,165,233,.9)} 100%{transform:scale(1)} }
     .overlay-on .mc-card.ghost { opacity:.1; }
@@ -363,7 +373,7 @@
           </div>
           <button onclick="prefill()" class="btn-glow px-3 py-2.5 bg-gradient-to-r from-sky-500 to-indigo-500 text-white rounded-xl text-xs font-bold"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Pre-fill from the standard plan</button>
           <button id="clear-btn" onclick="clearCourses()" class="btn-glow px-3 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-xl text-xs font-semibold"><i class="fa-solid fa-eraser mr-1"></i>Clear courses</button>
-          <p class="text-[11px] text-slate-500 flex-1 min-w-[220px] leading-relaxed">Click a course card to mark it as <b>Completed</b>. Click the <i class="fa-solid fa-hourglass-half text-amber-600 font-bold"></i> button on any course box to set it as <b>Taking Now</b>.</p>
+          <p class="text-[11px] text-slate-500 flex-1 min-w-[220px] leading-relaxed">Click a course card to mark it as <b>Completed</b>. Click the <i class="fa-solid fa-hourglass-half text-amber-600 font-bold"></i> button on any course box to set it as <b>Taking Now</b>, or the <i class="fa-solid fa-calendar-plus text-fuchsia-600 font-bold"></i> button to add it to your <b>Next term plan</b>.</p>
         </div>
         <div id="next-strip" class="mt-3 pt-3 border-t border-sky-100 space-y-2" aria-live="polite"></div>
       </div>
@@ -387,7 +397,7 @@
         <span class="flex items-center gap-1.5"><i class="lg-ring" style="border-color:#0ea5e9;box-shadow:0 0 6px rgba(14,165,233,.5)"></i>Available now</span>
         <span class="flex items-center gap-1.5"><i class="lg-ring" style="border-color:#6366f1;box-shadow:0 0 6px rgba(99,102,241,.5)"></i>Take together with another course</span>
         <span class="flex items-center gap-1.5"><i class="lg-dot" style="background:#94a3b8"><i class="fa-solid fa-lock"></i></i>Locked until prerequisites are done</span>
-        <span class="flex items-center gap-1.5"><i class="lg-ring"></i>Suggested for next term</span>
+        <span class="flex items-center gap-1.5"><i class="lg-ring" style="border-color:#d946ef;box-shadow:0 0 8px rgba(217,70,239,.6)"></i>Planned for next term (editable)</span>
       </div>
       <p class="text-[11px] text-slate-500 mt-3 leading-relaxed">Hover or focus a course to trace what it needs and what it unlocks. Use the small info icon on a course for details. Swipe sideways on small screens to follow the years. Based on the department course flowchart; the * and ** marks come from that chart, so confirm their conditions with your advisor.</p>
     </div>
@@ -577,7 +587,7 @@ const lbl = id => { const c=BYID[id]; return c.code==='GER-Core' ? 'GER-Core: '+
 const termLabel = t => t.sem==='Summer' ? 'Summer (after Year 3)' : 'Year '+t.year+' · '+t.sem;
 
 // ---------- planning logic ----------
-const state = { student:{name:'',id:'',email:'',advisor:''}, notes:'', termId:'Y1F', status:{}, open:{}, downloaded:false, loaded:null };
+const state = { student:{name:'',id:'',email:'',advisor:''}, notes:'', termId:'Y1F', status:{}, nextPlan:null, open:{}, downloaded:false, loaded:null };
 
 const isYear4 = c => c.ti >= termIndex('Y4F');
 function evaluate(c){
@@ -587,14 +597,13 @@ function evaluate(c){
   const pendingPre = c.pre.filter(p=>st(p)==='prog');
   const coNeeded = c.co.filter(q=>!satisfied(q));
   const coBlocked = coNeeded.filter(q=>BYID[q].pre.some(p=>!satisfied(p)));
-  const lock = isYear4(c) && termIndex(state.termId) < termIndex('SUM');
+  const lock = false; // Year 4 GER/other courses may be taken earlier
   let s = 'ready';
   if(lock || missingPre.length || coBlocked.length) s='blocked'; else if(coNeeded.length) s='together';
   return {state:s, lock, missingPre, pendingPre, coNeeded, coBlocked};
 }
 function reasons(ev){
   const out=[];
-  if(ev.lock) out.push('Year 4 course: can only be taken in Year 4');
   if(ev.missingPre.length) out.push('Finish first: '+ev.missingPre.map(lbl).join(', '));
   if(ev.coBlocked.length) out.push('Needs '+ev.coBlocked.map(lbl).join(', ')+' at the same time, and that course is not open yet');
   else if(ev.coNeeded.length) out.push('Take together with: '+ev.coNeeded.map(lbl).join(', '));
@@ -610,7 +619,7 @@ function computePlan(){
   const ev = {}; open.forEach(c=>ev[c.id]=evaluate(c));
   const nextList = next ? open.filter(c=>c.term===next.id) : [];
   const catchUp = open.filter(c=>c.ti<=cur);
-  const ahead = next ? open.filter(c=>c.ti>next.idx && c.type!=='elec' && c.type!=='ger' && ev[c.id].state!=='blocked') : [];
+  const ahead = next ? open.filter(c=>c.ti>next.idx && ev[c.id].state!=='blocked') : [];
   const flags = [];
   COURSES.forEach(c=>{
     const s = state.status[c.id]; if(!s) return;
@@ -619,9 +628,11 @@ function computePlan(){
     const badCo = c.co.filter(q=>!state.status[q]);
     if(badCo.length) flags.push(lbl(c.id)+' is normally taken with or after '+badCo.map(lbl).join(', ')+', which '+(badCo.length>1?'are':'is')+' not marked.');
   });
-  COURSES.forEach(c=>{ if(state.status[c.id] && isYear4(c) && cur<termIndex('Y4F')) flags.push(lbl(c.id)+' is a Year 4 course and can only be taken in Year 4.'); });
   if(cur>=termIndex('Y4F') && !state.status.MCE397) flags.push('MCE 397 (0-credit summer professional training) is not marked yet.');
-  return {cur, next, done, prog, remaining: TOTAL_CR-done-prog, open, ev, nextList, catchUp, ahead, flags};
+  const auto = nextList.filter(c=>ev[c.id].state!=='blocked');
+  const planned = !next ? [] : (state.nextPlan ? state.nextPlan.map(i=>BYID[i]).filter(c=>c && !state.status[c.id]) : auto);
+  const plannedSet = new Set(planned.map(c=>c.id));
+  return {cur, next, done, prog, remaining: TOTAL_CR-done-prog, open, ev, nextList, auto, planned, plannedSet, catchUp, ahead, flags};
 }
 // ==== PURE-END ====
 
@@ -659,6 +670,7 @@ function buildMap(){
   COURSES.forEach(c=>{
     h+=`<div class="mc-card t-${c.type} ghost" role="button" tabindex="0" data-id="${c.id}" style="left:${colX(c.col)}px;top:${rowY(c.row)}px" aria-label="${esc(c.code+' '+c.name)}. Click to change status.">
       <span class="info" role="button" tabindex="0" aria-label="Details for ${esc(c.code)}"><i class="fa-solid fa-circle-info"></i></span>
+      <button class="btn-plan" title="Add or remove from next-term plan" aria-label="Toggle next-term plan for ${esc(c.code)}"><i class="fa-solid fa-calendar-plus"></i></button>
       <button class="btn-now" title="Toggle Taking Now" aria-label="Toggle Taking Now for ${esc(c.code)}"><i class="fa-solid fa-hourglass-half"></i></button>
       <span class="badge"><i class="fa-solid fa-check"></i></span>
       <span class="code">${esc(c.code)}${c.star?' '+c.star:''}</span><span class="nm">${esc(c.name)}</span><span class="cr">${c.cr} ${c.cr===1?'cr':'crs'}</span></div>`;
@@ -677,6 +689,10 @@ function buildMap(){
     const btnNow = el.querySelector('.btn-now');
     btnNow.addEventListener('click', e => { e.stopPropagation(); toggleTakingNow(id); });
     btnNow.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); e.stopPropagation(); toggleTakingNow(id); } });
+
+    const btnPlan = el.querySelector('.btn-plan');
+    btnPlan.addEventListener('click', e => { e.stopPropagation(); togglePlanned(id, true); });
+    btnPlan.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); e.stopPropagation(); togglePlanned(id, true); } });
 
     const inf=el.querySelector('.info');
     inf.addEventListener('click',e=>{ e.stopPropagation(); openCourse(id); });
@@ -797,12 +813,12 @@ function updateOverlay(){
     else {
       const ev=P.ev[c.id];
       if(ev.state!=='blocked') avail.add(c.id);
+      if(P.plannedSet.has(c.id) && (active||state.nextPlan)) el.classList.add('st-next');
       if(!active) return;
       if(ev.state==='blocked'){ el.classList.add('st-blocked'); icon.className='fa-solid fa-lock'; }
       else {
         el.classList.add(ev.state==='together'?'st-together':'st-ready');
         if(ev.state==='together') icon.className='fa-solid fa-link';
-        if(P.next && c.term===P.next.id) el.classList.add('st-next');
       }
     }
   });
@@ -817,19 +833,44 @@ function groupChips(list,P,cls){
   list.forEach(c=>{ const k=c.type==='elec'?c.name+' ('+c.code+')':lbl(c.id); const g=m.get(k)||{ids:[],cr:0,tg:false}; g.ids.push(c.id); g.cr+=c.cr; if(P.ev[c.id].state==='together') g.tg=true; m.set(k,g); });
   return [...m].map(([k,g])=>`<button class="opt-chip ${cls||''} ${g.tg&&!cls?'tg':''}" onclick="focusCourse('${g.ids[0]}')" title="Show on the map">${esc(k)}${g.ids.length>1?' ×'+g.ids.length:''}<small>${g.cr} cr</small></button>`).join('');
 }
+const shortTerm = t => t.sem==='Summer' ? 'Summer' : 'Y'+t.year+' '+t.sem;
+function plannedChips(P){
+  return P.planned.map(c=>{
+    const k=c.type==='elec'?c.name+' ('+c.code+')':lbl(c.id), blocked=P.ev[c.id].state==='blocked';
+    return `<span class="opt-chip pl ${blocked?'warn':''}"><button onclick="focusCourse('${c.id}')" title="${blocked?'Prerequisites not met yet. ':''}Show on the map">${esc(k)}${blocked?' <i class="fa-solid fa-triangle-exclamation"></i>':''}<small>${c.cr} cr</small></button><button class="chip-x" onclick="togglePlanned('${c.id}')" aria-label="Remove ${esc(k)} from next term" title="Remove">&times;</button></span>`;
+  }).join('');
+}
+function addSelect(P){
+  const opts=P.open.filter(c=>!P.plannedSet.has(c.id) && P.ev[c.id].state!=='blocked').sort((a,b)=>a.ti-b.ti||a.row-b.row);
+  return `<select class="px-2 py-1.5 bg-white border border-fuchsia-300 rounded-lg text-[11px] max-w-[260px]" onchange="addPlanned(this)" aria-label="Add a course to the next term plan"><option value="">+ Add a course…</option>${opts.map(c=>`<option value="${c.id}">${esc(lbl(c.id))} · ${c.cr} cr · ${esc(shortTerm(TERMS[c.ti]))}</option>`).join('')}</select>`;
+}
 function renderNextStrip(P){
   const el=$('next-strip'); if(!el) return;
   let h='';
   if(!P.next){ h='<p class="text-xs text-slate-600">You are in the last term. Check the plan below for anything still unmarked.</p>'; }
   else {
-    const nxt=P.nextList.filter(c=>P.ev[c.id].state!=='blocked'), sum=nxt.reduce((s,c)=>s+c.cr,0);
-    const hint = !Object.values(state.status).includes('prog') ? 'Mark the courses you are taking now, or use Pre-fill, to see what opens.' : 'Nothing in that term is open yet. Check the prerequisites on the map.';
-    h+=`<div class="flex flex-wrap items-center gap-2"><span class="text-[11px] font-bold uppercase tracking-wider text-warmorange-600 whitespace-nowrap"><i class="fa-solid fa-forward mr-1"></i>Next term · ${esc(termLabel(P.next))}</span>${nxt.length?groupChips(nxt,P):'<span class="text-xs text-slate-500">'+hint+'</span>'}${nxt.length?`<span class="text-[11px] text-slate-500 whitespace-nowrap">${sum} cr ready</span>`:''}</div>`;
+    const sum=P.planned.reduce((s,c)=>s+c.cr,0);
+    const hint = !Object.values(state.status).includes('prog') ? 'Mark the courses you are taking now, or use Pre-fill, to see suggestions. You can also add courses yourself.' : 'No course selected. Use "Add a course" to build your own list.';
+    h+=`<div class="flex flex-wrap items-center gap-2"><span class="text-[11px] font-bold uppercase tracking-wider text-fuchsia-700 whitespace-nowrap"><i class="fa-solid fa-calendar-plus mr-1"></i>Next term plan · ${esc(termLabel(P.next))}</span>${P.planned.length?plannedChips(P):'<span class="text-xs text-slate-500">'+hint+'</span>'}${P.planned.length?`<span class="text-[11px] text-slate-500 whitespace-nowrap">${sum} cr selected</span>`:''}</div>
+    <div class="flex flex-wrap items-center gap-2">${addSelect(P)}${state.nextPlan?'<button onclick="resetNextPlan()" class="text-[11px] font-bold text-sky-600 hover:text-warmorange-600"><i class="fa-solid fa-rotate-left mr-1"></i>Reset to suggested</button><span class="chip info">Customised</span>':'<span class="chip info">Suggested</span>'}<span class="text-[11px] text-slate-500">Remove with &times;, or use the <i class="fa-solid fa-calendar-plus text-fuchsia-600"></i> button on any map card.</span></div>`;
   }
   const back=P.catchUp.filter(c=>P.ev[c.id].state!=='blocked');
   if(back.length) h+=`<div class="flex flex-wrap items-center gap-2"><span class="text-[11px] font-bold uppercase tracking-wider text-amber-700 whitespace-nowrap"><i class="fa-solid fa-clock-rotate-left mr-1"></i>Behind the standard plan</span>${groupChips(back,P,'bk')}</div>`;
   el.innerHTML=h;
 }
+function setNextPlan(arr){ state.nextPlan=arr; renderResults(); updateOverlay(); save(); }
+function togglePlanned(id, fromMap){
+  const P=computePlan();
+  if(!P.next){ toast('You are in the last term, so there is no next term to plan.'); return; }
+  if(state.status[id]){ toast(lbl(id)+' is already marked. Clear its status first to plan it.'); return; }
+  const ids=P.planned.map(c=>c.id), i=ids.indexOf(id);
+  let warn='';
+  if(i>=0) ids.splice(i,1); else { ids.push(id); const ev=P.ev[id]; if(ev && ev.state==='blocked') warn=' Note: '+reasons(ev)[0]+'.'; }
+  setNextPlan(ids);
+  toast(lbl(id)+(i>=0?' removed from':' added to')+' your next-term plan.'+warn);
+}
+function addPlanned(sel){ const id=sel.value; if(!id) return; togglePlanned(id); }
+function resetNextPlan(){ setNextPlan(null); toast('Next-term plan reset to the suggestion.'); }
 function focusCourse(id){
   const el=document.querySelector('.mc-card[data-id="'+id+'"]'); if(!el) return;
   if(mapStep<TERMS.length){ stopPlay(); setStep(TERMS.length,{scroll:false}); }
@@ -900,11 +941,11 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeCourse(); });
 
 // ================= PLANNER =================
 const LS_KEY='aus_me_advising_v1';
-function save(){ try{ sessionStorage.setItem(LS_KEY, JSON.stringify({student:state.student, notes:state.notes, termId:state.termId, status:state.status})); }catch(e){} }
+function save(){ try{ sessionStorage.setItem(LS_KEY, JSON.stringify({student:state.student, notes:state.notes, termId:state.termId, status:state.status, nextPlan:state.nextPlan})); }catch(e){} }
 function loadSaved(){
   try{
     const s=JSON.parse(sessionStorage.getItem(LS_KEY)||'null');
-    if(s){ Object.assign(state.student,s.student||{}); state.notes=s.notes||''; if(s.termId && TERMS.some(t=>t.id===s.termId)) state.termId=s.termId; state.status=s.status||{}; }
+    if(s){ Object.assign(state.student,s.student||{}); state.notes=s.notes||''; if(s.termId && TERMS.some(t=>t.id===s.termId)) state.termId=s.termId; state.status=s.status||{}; state.nextPlan=Array.isArray(s.nextPlan)?s.nextPlan.filter(i=>BYID[i]):null; }
   }catch(e){}
 }
 function defaultOpen(){ const cur=termIndex(state.termId); state.open={}; TERMS.forEach(t=>{ state.open[t.id]= t.idx<=cur+1; }); }
@@ -923,8 +964,9 @@ function onStudentInput(){
   state.student={name:$('st-name').value.trim(), id:$('st-id').value.trim(), email:$('st-email').value.trim(), advisor:$('st-advisor').value.trim()};
   state.notes=$('st-notes').value; renderStepper(); updateDownloadState(); save();
 }
-function onTermChange(){ state.termId=$('st-term').value; defaultOpen(); renderCourseList(); renderResults(); renderStepper(); updateOverlay(); save(); }
+function onTermChange(){ state.termId=$('st-term').value; state.nextPlan=null; defaultOpen(); renderCourseList(); renderResults(); renderStepper(); updateOverlay(); save(); }
 function prefill(){
+  state.nextPlan=null;
   const cur=termIndex(state.termId);
   COURSES.forEach(c=>{ if(c.ti<cur) state.status[c.id]='done'; else if(c.ti===cur) state.status[c.id]='prog'; });
   renderCourseList(); renderResults(); renderStepper(); updateOverlay(); save();
@@ -935,21 +977,21 @@ function clearCourses(){
   const b=$('clear-btn');
   if(!clearArmed){ clearArmed=true; b.innerHTML='<i class="fa-solid fa-triangle-exclamation mr-1"></i>Click again to clear'; setTimeout(()=>{ clearArmed=false; b.innerHTML='<i class="fa-solid fa-eraser mr-1"></i>Clear courses'; },3000); return; }
   clearArmed=false; b.innerHTML='<i class="fa-solid fa-eraser mr-1"></i>Clear courses';
-  state.status={}; renderCourseList(); renderResults(); renderStepper(); updateOverlay(); save(); toast('Courses cleared.');
+  state.status={}; state.nextPlan=null; renderCourseList(); renderResults(); renderStepper(); updateOverlay(); save(); toast('Courses cleared.');
 }
 let resetArmed=false;
 function resetAll(){
   const b=$('reset-btn');
   if(!resetArmed){ resetArmed=true; b.innerHTML='<i class="fa-solid fa-triangle-exclamation mr-1"></i>Click again to reset'; setTimeout(()=>{ resetArmed=false; b.innerHTML='<i class="fa-solid fa-rotate-left mr-1"></i>Reset all'; },3000); return; }
   resetArmed=false; b.innerHTML='<i class="fa-solid fa-rotate-left mr-1"></i>Reset all';
-  state.student={name:'',id:'',email:'',advisor:''}; state.notes=''; state.termId='Y1F'; state.status={}; state.loaded=null;
+  state.student={name:'',id:'',email:'',advisor:''}; state.notes=''; state.termId='Y1F'; state.status={}; state.nextPlan=null; state.loaded=null;
   $('record-banner').classList.add('hidden'); defaultOpen(); fillStudentForm(); renderAll(); toast('Everything was reset.');
 }
 function expandAll(v){ TERMS.forEach(t=>state.open[t.id]=v); renderCourseList(); }
 
 function reqLine(c){
   const p=c.pre.map(lbl), q=c.co.map(lbl);
-  const y4 = isYear4(c) ? 'Year 4 only' : '';
+  const y4 = '';
   if(!p.length && !q.length) return ['No prerequisite on the chart', y4].filter(Boolean).join(' · ');
   return [p.length?'Needs: '+p.join(', '):'', q.length?'With or after: '+q.join(', '):'', y4].filter(Boolean).join(' · ');
 }
@@ -1016,11 +1058,11 @@ function statusChip(ev){
   if(ev.state==='together') return '<span class="chip mid"><i class="fa-solid fa-link"></i> Take together</span>';
   return '<span class="chip no"><i class="fa-solid fa-lock"></i> Not open yet</span>';
 }
-function itemHTML(c,ev,tag){
+function itemHTML(c,ev,tag,rm){
   return `<div class="res-item flex flex-wrap items-start justify-between gap-2">
     <div class="min-w-0"><div class="flex items-baseline gap-2 flex-wrap"><button class="font-mono text-xs font-bold text-sky-700 hover:text-warmorange-600" onclick="openCourse('${c.id}')">${esc(c.code)}${c.star?' '+c.star:''}</button><span class="text-[11px] text-slate-500">${c.cr} ${c.cr===1?'cr':'crs'}${tag?' · '+esc(tag):''}</span></div>
     <div class="text-xs text-slate-700">${esc(c.name)}</div>
-    ${reasons(ev).map(r=>`<div class="text-[11px] text-slate-500 mt-0.5">${esc(r)}</div>`).join('')}</div>${statusChip(ev)}</div>`;
+    ${reasons(ev).map(r=>`<div class="text-[11px] text-slate-500 mt-0.5">${esc(r)}</div>`).join('')}</div><div class="flex flex-col items-end gap-1">${statusChip(ev)}${rm?`<button onclick="togglePlanned('${c.id}')" class="text-[10.5px] font-bold text-fuchsia-700 hover:text-red-600"><i class="fa-solid fa-xmark mr-0.5"></i>Remove</button>`:''}</div></div>`;
 }
 let tableFilter='all';
 function renderResults(){
@@ -1038,11 +1080,11 @@ function renderResults(){
   if(!P.next){
     h+=`<div><h4 class="font-bold text-xs uppercase tracking-wider text-slate-900 mb-2">Graduation check</h4>${P.open.length?`<p class="text-xs text-slate-600 mb-2">${P.open.length} course${P.open.length>1?'s':''} still not marked.</p>`:'<p class="text-xs text-emerald-700 font-semibold">Every course is marked. Ask your advisor for the final degree audit.</p>'}</div>`;
   } else {
-    const nr = P.nextList.filter(c=>P.ev[c.id].state!=='blocked');
+    const nr = P.planned;
     h+=`<div><h4 class="font-bold text-xs uppercase tracking-wider text-slate-900 mb-1 flex items-center gap-2"><i class="fa-solid fa-forward text-warmorange-500"></i> Next term · ${esc(termLabel(P.next))}</h4>
-      <p class="text-[11px] text-slate-500 mb-2">Assumes you pass the courses marked "Taking now". Standard load ${P.next.cr} crs · ready ${nr.reduce((s,c)=>s+c.cr,0)} crs.</p>
+      <p class="text-[11px] text-slate-500 mb-2">Assumes you pass the courses marked "Taking now". Standard load ${P.next.cr} crs · selected ${nr.reduce((s,c)=>s+c.cr,0)} crs (${state.nextPlan?'customised':'suggested'}). Add or remove courses above the map.</p>
       ${!Object.values(state.status).includes('prog')?'<p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 mb-2">No course is marked "Taking now" yet, so next-term results may show blocked courses.</p>':''}
-      <div class="space-y-2">${P.nextList.length?P.nextList.map(c=>itemHTML(c,P.ev[c.id])).join(''):'<p class="text-xs text-slate-500">All courses of that term are already marked.</p>'}</div></div>`;
+      <div class="space-y-2">${P.planned.length?P.planned.map(c=>itemHTML(c,P.ev[c.id],c.ti===P.next.idx?'':termLabel(TERMS[c.ti]),true)).join(''):'<p class="text-xs text-slate-500">No courses selected for next term. Use "Add a course" above the map.</p>'}</div></div>`;
   }
   const cu = P.catchUp;
   if(cu.length) h+=`<div><h4 class="font-bold text-xs uppercase tracking-wider text-slate-900 mb-1 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-warmorange-500"></i> Behind the standard plan (${cu.length})</h4>
@@ -1069,9 +1111,9 @@ async function buildRecord(){
     schema:'aus-me-advising-record', version:1, generated:new Date().toISOString(),
     student:{...state.student}, notes:state.notes,
     standing:{termId:state.termId, term:termLabel(TERMS[P.cur]), nextTerm:P.next?termLabel(P.next):null},
-    courses:{ completed:COURSES.filter(c=>state.status[c.id]==='done').map(c=>c.id), inProgress:COURSES.filter(c=>state.status[c.id]==='prog').map(c=>c.id) },
+    courses:{ completed:COURSES.filter(c=>state.status[c.id]==='done').map(c=>c.id), inProgress:COURSES.filter(c=>state.status[c.id]==='prog').map(c=>c.id), plannedNext:P.planned.map(c=>c.id), customPlan:!!state.nextPlan },
     summary:{ creditsCompleted:P.done, creditsInProgress:P.prog, creditsRemaining:P.remaining, creditsRequired:TOTAL_CR },
-    plan:{ nextTerm:list(P.nextList), behindPlan:list(P.catchUp), flags:P.flags },
+    plan:{ nextTerm:list(P.planned), behindPlan:list(P.catchUp), flags:P.flags },
   };
 }
 function saveFile(name,mime,text){
@@ -1122,6 +1164,7 @@ async function importRecord(ev){
     if(r.schema!=='aus-me-advising-record') throw new Error('schema');
     state.student={name:'',id:'',email:'',advisor:'',...(r.student||{})}; state.notes=r.notes||''; state.termId=TERMS.some(t=>t.id===r.standing?.termId)?r.standing.termId:'Y1F';
     state.status={}; (r.courses?.completed||[]).forEach(id=>{ if(BYID[id]) state.status[id]='done'; }); (r.courses?.inProgress||[]).forEach(id=>{ if(BYID[id]) state.status[id]='prog'; });
+    state.nextPlan = (r.courses?.customPlan && Array.isArray(r.courses.plannedNext)) ? r.courses.plannedNext.filter(i=>BYID[i]) : null;
     defaultOpen(); fillStudentForm(); setView('planner'); renderAll(); save();
     const b=$('record-banner'); b.classList.remove('hidden');
     b.innerHTML=`<div class="glass rounded-2xl p-4 flex flex-wrap items-center gap-3 text-xs"><span class="chip info"><i class="fa-solid fa-folder-open"></i> Record loaded</span><span class="text-slate-700"><b>${esc(state.student.name)}</b> · ${esc(state.student.id)} · saved ${esc(new Date(r.generated).toLocaleDateString())}</span><span class="text-slate-500">Check these marks against the student's official record.</span></div>`;
@@ -1141,7 +1184,7 @@ function botReply(q){
   }
   if(/next|take|eligible|ready|register/i.test(q)){
     if(!hasAny()) return 'Click the courses you have finished on the map first, and the ones you are taking now. Then I can list what you can take next.';
-    const P=computePlan(); const rd=[...P.nextList,...P.catchUp].filter((c,i,a)=>a.indexOf(c)===i&&P.ev[c.id].state!=='blocked').map(c=>lbl(c.id));
+    const P=computePlan(); const rd=[...P.planned,...P.catchUp].filter((c,i,a)=>a.indexOf(c)===i&&P.ev[c.id].state!=='blocked').map(c=>lbl(c.id));
     return rd.length?'Ready or take-together courses: '+esc(rd.join(', '))+'.':'Nothing from your next term is open yet. Check that your "Taking now" courses are marked.';
   }
   if(/download|advisor|record|report/i.test(q)) return 'In the Download section below the map you can download an advisor report (.html, printable) and a record (.json). Your advisor can load the .json to see your courses.';
